@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_app/pages/homePage.dart';
+import 'package:ecoDrive/pages/homePage.dart';
 
 class LoginPage extends StatelessWidget{
   @override

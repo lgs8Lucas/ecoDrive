@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_app/pages/viagemPage.dart';
+import 'package:ecoDrive/pages/viagemPage.dart';
 
 class HomePage extends StatelessWidget {
   @override
