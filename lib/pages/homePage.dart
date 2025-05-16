@@ -164,6 +164,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Função para o botão de iniciar viagem
   Widget btnIniciaViagem(){
     return FloatingActionButton.extended(
       label: Text("Iniciar Viagem", style: TextStyle(
