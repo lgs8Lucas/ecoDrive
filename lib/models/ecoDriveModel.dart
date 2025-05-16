@@ -18,4 +18,13 @@ class EcoDriveModel{
       'dataViagem': dataViagem.toIso8601String(), //Formato compativel como banco de dados
      };
   }
+
+  // Converte Map em objeto para ler do banco
+  factory EcoDriveModel.fromMap(Map<String, dynamic> map) {
+    return EcoDriveModel(
+      id: map['id'] ?? 0,
+      nomeViagem: map['nomeViagem'] ?? '',
+      dataViagem: DateTime.tryParse(map['dataViagem'] ?? '') ?? DateTime.now(),
+    );
+  }
 }
