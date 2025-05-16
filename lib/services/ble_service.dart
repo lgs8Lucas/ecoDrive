@@ -12,10 +12,8 @@ class BleService{
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((BluetoothAdapterState state) {
       if (state == BluetoothAdapterState.on) {
         AppSettings.bluetoothIsEnabled = true;
-        print("Bluetooth foi ativado.");
       } else {
         AppSettings.bluetoothIsEnabled = false;
-        print("Bluetooth foi desativado.");
       }
     });
   }

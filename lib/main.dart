@@ -1,7 +1,7 @@
 import 'package:ecoDrive/services/ble_service.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:ecoDrive/pages/homePage.dart';
+import 'package:ecoDrive/pages/home_page.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
 
 void main() {
