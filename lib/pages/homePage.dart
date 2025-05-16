@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/viagemPage.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/widgets/stream_builder.dart';
+import 'package:ecoDrive/models/ecoDriveModel.dart';
+import 'package:ecoDrive/controllers/ecoDriveController.dart';
+
+// Instância do controller
+final EcoDriveController controller = EcoDriveController();
 
 class HomePage extends StatelessWidget {
   @override
@@ -169,12 +174,18 @@ class HomePage extends StatelessWidget {
     return FloatingActionButton.extended(
       label: Text("Iniciar Viagem", style: TextStyle(
         color: AppColors.colorMainText,
-      ),), onPressed: () {},
+      ),
+      ),
+      onPressed: () async {
+        final novaViagem = EcoDriveModel(
+          nomeViagem: "Viagem Teste 4",
+          dataViagem: DateTime.now(),
+        );
+        await controller.salvarViagem(novaViagem);
+        print("Viagem salva com sucesso!");
+      },
       backgroundColor: AppColors.colorMain,
       icon: Icon(Icons.directions_car, color:AppColors.colorMainText),
-
-
-
     );
   }
 }

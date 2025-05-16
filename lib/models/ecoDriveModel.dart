@@ -1,11 +1,11 @@
 class EcoDriveModel{
-  int id = 0;
+  int? id = 0;
   String nomeViagem;
   DateTime dataViagem;
 
   // Construtor com parâmetros obrigatórios
   EcoDriveModel({
-    required this.id,
+    this.id,
     required this.nomeViagem,
     DateTime? dataViagem,
   }) : dataViagem = dataViagem ?? DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual

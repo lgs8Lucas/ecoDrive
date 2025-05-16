@@ -17,10 +17,10 @@ class EcoDriveRepository {
     );
   }
 
-  // Método para inserir um novo registro no banco de dados
+  // Metodo para inserir um novo registro no banco de dados
   Future create(EcoDriveModel model) async {
     try {
-      final Database db = await _getDatabse();
+      final Database db = await _getDatabase();
       await db.insert(
         tableName,
         model.toMap(),
@@ -32,7 +32,8 @@ class EcoDriveRepository {
     }
   }
 
-  Future<List<EcoDriveModel>> _getEcoDrive() async {
+  // Metodo para retornar todos os registros do banco de dados
+  Future<List<EcoDriveModel>> getEcoDrive() async {
     try {
       final Database db = await _getDatabase();
       final List<Map<String, dynamic>> maps = await db.query(tableName);
@@ -49,6 +50,7 @@ class EcoDriveRepository {
     }
   }
 
+  // Metodo para atualizar um registro no banco de dados
   Future update(EcoDriveModel model) async {
     try {
       final Database db = await _getDatabase();
@@ -64,6 +66,7 @@ class EcoDriveRepository {
     }
   }
 
+  // Metodo para deletar um registro no banco de dados
   Future delete(EcoDriveModel model) async {
     try {
       final Database db = await _getDatabase();
