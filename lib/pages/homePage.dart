@@ -75,7 +75,29 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Função para a lista de corridas
+  // Função para a listar viagens
+  Widget listaHistorico(BuildContext context) {
+    return FutureBuilder<List<EcoDriveModel>>(
+      future: controller.listarViagens(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final viagens = snapshot.data ?? []; // Lista de viagens
+
+        return ListView.builder(
+          itemCount: viagens.length,
+          itemBuilder: (context, index) {
+            final viagem = viagens[index];
+            return itemViagem(context, viagem);
+          },
+        );
+      },
+    );
+  }
+
+  // Função para a lista itens da viagem
   Widget itemViagem(BuildContext context, EcoDriveModel viagem) {
     return GestureDetector(
       onTap: () {
@@ -100,9 +122,13 @@ class HomePage extends StatelessWidget {
                   viagem.dataViagem.toString(), // pega do banco
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deletarViagem(viagem),
+                ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 5),
             Row(
               children: <Widget>[
                 Icon(Icons.title, color: AppColors.colorMain),
@@ -116,31 +142,6 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget listaHistorico(BuildContext context) {
-    return FutureBuilder<List<EcoDriveModel>>(
-      future: controller.listarViagens(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        final viagens = snapshot.data ?? [];
-
-        if (viagens.isEmpty) {
-          return Center(child: Text("Nenhuma viagem salva."));
-        }
-
-        return ListView.builder(
-          itemCount: viagens.length,
-          itemBuilder: (context, index) {
-            final viagem = viagens[index];
-            return itemViagem(context, viagem);
-          },
-        );
-      },
     );
   }
 
