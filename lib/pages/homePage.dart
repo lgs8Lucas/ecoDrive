@@ -6,15 +6,15 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home',
+        title: Text('EcoDrive',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.grey[750],
+            color: Colors.white,
             letterSpacing: 1.0,
           ),
         ),
-        backgroundColor: Color(0xFFE5E5EA),
+        backgroundColor: Colors.green,
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -24,10 +24,8 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             SizedBox(height: 1),
-            search(),
-            SizedBox(height: 30),
             Text(
-              "Opções de Menu",
+              "Conexão com o ODB",
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
@@ -36,10 +34,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            Container(
-              height: 90,
-              child: listaCategorias(),
-            ),
+            Container( child: conexaoODB()),
             SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,45 +48,16 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
-            Container(
-              height: 300,
-              child: listaProdutos(context),
-            )
+            Expanded(
+                child: Container(
+                  height: 300,
+                  child: listaHistorico(context),
+              )
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  // Função para a barra de pesquisa
-  Widget search() {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(0, 0, 0, 0.1),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        children: <Widget>[
-          SizedBox(width: 15),
-          Icon(Icons.search),
-          SizedBox(width: 10),
-          Expanded(
-            child: TextFormField(
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                labelText: "Busca",
-                labelStyle: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w300,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      floatingActionButton: btnIniciaViagem(),
     );
   }
 
@@ -134,25 +100,61 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Função para a lista de produtos
-  Widget listaProdutos(BuildContext context) {
+  Widget conexaoODB(){
+    var bluetooth = true; // Simulando o estado do Bluetooth
+    return Container(
+      padding: EdgeInsets.only(left: 30, right: 30, top: 10, bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(40), // Define o raio da borda
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            children: [
+              Text("Bluetooth: "),
+              Text("ODB")
+            ],
+          ),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: bluetooth ? Colors.green : Colors.red,
+              shape: BoxShape.circle,
+
+            ),
+            child: Icon(
+              bluetooth ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+              color: Colors.white,
+            ),
+          )
+        ]
+      )
+    );
+  }
+  
+  
+  // Função para a lista de corridas
+  Widget listaHistorico(BuildContext context) {
     return Container(
       child: ListView(
         scrollDirection: Axis.vertical,
         children: <Widget>[
-          produtoItem(context),
-          produtoItem(context),
-          produtoItem(context),
-          produtoItem(context),
-          produtoItem(context),
-          produtoItem(context),
+          itemViagem(context),
+          itemViagem(context),
+          itemViagem(context),
+          itemViagem(context),
+          itemViagem(context),
+          itemViagem(context),
         ],
       ),
     );
   }
 
-  // Função para os itens da lista de produtos
-  Widget produtoItem(BuildContext context) {
+  // Função para os itens do historico
+  Widget itemViagem(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -192,6 +194,19 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget btnIniciaViagem(){
+    return FloatingActionButton.extended(
+      label: Text("Iniciar Viagem", style: TextStyle(
+        color: Colors.white
+      ),), onPressed: () {},
+      backgroundColor: Colors.green,
+      icon: Icon(Icons.directions_car, color: Colors.white),
+
+
+
     );
   }
 }
