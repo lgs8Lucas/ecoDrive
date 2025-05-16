@@ -1,0 +1,2 @@
+CREATE TABLE ecoDriveTable( id INTEGER PRIMARY KEY AUTOINCREMENT, nomeViagem TEXT, dataViagem TEXT)
+
