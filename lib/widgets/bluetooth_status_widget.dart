@@ -13,7 +13,8 @@ class BluetoothStatusWidget extends StatelessWidget {
       builder: (context, snapshot) {
         final state = snapshot.data;
         AppSettings.bluetoothIsEnabled = state == BluetoothAdapterState.on;
-        var connection = AppSettings.bluetoothIsEnabled;
+        bool connection = AppSettings.bluetoothIsEnabled && AppSettings.odbIsConnected;
+
 
         return Container(
             padding: EdgeInsets.only(left: 30, right: 30, top: 10, bottom: 10),
@@ -25,6 +26,7 @@ class BluetoothStatusWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text.rich(
                         TextSpan(
@@ -43,7 +45,23 @@ class BluetoothStatusWidget extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text("ODB", style: AppStyles.simpleText,)
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "ODB: ",
+                              style: AppStyles.simpleText,
+                            ),
+                            TextSpan(
+                              text: AppSettings.odbIsConnected ? "Conectado ao..." : "Desconectado",
+                              style: TextStyle(
+                                  color: AppSettings.odbIsConnected ? AppColors.colorMain : AppColors.colorError,
+                                  fontSize: 18
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   Container(
