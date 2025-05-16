@@ -19,6 +19,7 @@ class App extends StatelessWidget{
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.colorMain),
+        scaffoldBackgroundColor: AppColors.colorWhite,
       ),
       home: HomePage(),
     );

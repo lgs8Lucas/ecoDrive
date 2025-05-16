@@ -12,18 +12,20 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('EcoDrive',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 32,
             fontWeight: FontWeight.w700,
-            color: AppColors.colorMainText,
+            color: AppColors.colorMain,
             letterSpacing: 1.0,
           ),
         ),
-        backgroundColor: AppColors.colorMain,
+        backgroundColor: AppColors.colorWhite,
       ),
       body: Container(
         padding: EdgeInsets.all(20),
         width: double.infinity,
-        color: AppColors.colorMainText,
+        decoration: BoxDecoration(
+          color: AppColors.colorWhite,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -47,6 +49,7 @@ class HomePage extends StatelessWidget {
             ),
             Expanded(
               child: ListView(
+                physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.vertical,
                 children: [
                   TripList(),
@@ -66,7 +69,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: (){},
         backgroundColor: AppColors.colorMain,
