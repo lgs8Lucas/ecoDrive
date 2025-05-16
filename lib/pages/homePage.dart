@@ -9,6 +9,12 @@ import 'package:ecoDrive/controllers/ecoDriveController.dart';
 // Instância do controller
 final EcoDriveController controller = EcoDriveController();
 
+// Função para deletar uma viagem
+void _deletarViagem(EcoDriveModel viagem) async {
+  await controller.deletarViagem(viagem);
+  controller.listarViagens();
+}
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -69,45 +75,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Função para a lista de categorias
-  Widget listaCategorias(){
-    return Container(
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: <Widget>[
-          categoriaItens(),
-          categoriaItens(),
-          categoriaItens(),
-          categoriaItens(),
-          categoriaItens(),
-        ],
-      ),
-    );
-  }
-
-  // Função para os itens da lista de categorias
-  Widget categoriaItens(){
-    return Container(
-      width: 70,
-      height: 70,
-      margin: EdgeInsets.all(10),
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          new BoxShadow(
-            color: Colors.black12,
-            offset: new Offset(1, 7.0),
-            blurRadius: 5,
-            spreadRadius: 1,
-          ),
-        ],
-        borderRadius: BorderRadius.circular(64),
-      ),
-      child: Image.asset("assets/relatorio.png"),
-    );
-  }
-  
   // Função para a lista de corridas
   Widget listaHistorico(BuildContext context) {
     return Container(
