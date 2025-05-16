@@ -6,7 +6,6 @@ import 'package:ecoDrive/shared/app_colors.dart';
 
 class BluetoothStatusWidget extends StatelessWidget {
   const BluetoothStatusWidget({super.key});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<BluetoothAdapterState>(
@@ -27,13 +26,12 @@ class BluetoothStatusWidget extends StatelessWidget {
                 children: [
                   Column(
                     children: [
-                      //Text("Bluetooth: ${(AppSettings.bluetoothIsEnabled? "Ativo": "Inativo", style: TextStyle(color: AppSettings.bluetoothIsEnabled? AppColors.colorMain : AppColors.colorError))}", style: AppStyles.simpleText),
                       Text.rich(
                         TextSpan(
                           children: [
                             TextSpan(
                               text: "Bluetooth: ",
-                              style: AppStyles.simpleText.copyWith(color: AppColors.colorBlack),
+                              style: AppStyles.simpleText,
                             ),
                             TextSpan(
                               text: AppSettings.bluetoothIsEnabled ? "Ativo" : "Inativo",
@@ -54,7 +52,6 @@ class BluetoothStatusWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: connection ? AppColors.colorMain : Colors.red,
                       shape: BoxShape.circle,
-
                     ),
                     child: Icon(
                       connection ? Icons.bluetooth_connected : Icons.bluetooth_disabled,

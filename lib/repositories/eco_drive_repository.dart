@@ -1,7 +1,7 @@
 import 'package:path/path.dart'; // Importa funções para manipular caminhos de arquivos
 import 'package:ecoDrive/settings.dart'; // Importa constantes definidas no arquivo settings.dart
 import 'package:sqflite/sqflite.dart'; // Importa a biblioteca sqflite
-import 'package:ecoDrive/models/ecoDriveModel.dart'; // Importa a classe EcoDriveModel
+import 'package:ecoDrive/models/eco_drive_model.dart'; // Importa a classe EcoDriveModel
 
 // Classe responsável por gerenciar o acesso ao banco de dados
 class EcoDriveRepository {

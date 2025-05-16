@@ -1,7 +1,7 @@
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/widgets/trip_list.dart';
 import 'package:flutter/material.dart';
-import 'package:ecoDrive/pages/viagemPage.dart';
+import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
 
