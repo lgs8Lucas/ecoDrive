@@ -71,29 +71,12 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: btnIniciaViagem(),
+      floatingActionButton: btnIniciaViagem(context),
     );
   }
 
   // Função para a lista de corridas
-  Widget listaHistorico(BuildContext context) {
-    return Container(
-      child: ListView(
-        scrollDirection: Axis.vertical,
-        children: <Widget>[
-          itemViagem(context),
-          itemViagem(context),
-          itemViagem(context),
-          itemViagem(context),
-          itemViagem(context),
-          itemViagem(context),
-        ],
-      ),
-    );
-  }
-
-  // Função para os itens do historico
-  Widget itemViagem(BuildContext context) {
+  Widget itemViagem(BuildContext context, EcoDriveModel viagem) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -114,7 +97,7 @@ class HomePage extends StatelessWidget {
                 Icon(Icons.calendar_today, color: AppColors.colorMain),
                 SizedBox(width: 10),
                 Text(
-                  "Data da Viagem",
+                  viagem.dataViagem.toString(), // pega do banco
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ],
@@ -125,7 +108,7 @@ class HomePage extends StatelessWidget {
                 Icon(Icons.title, color: AppColors.colorMain),
                 SizedBox(width: 10),
                 Text(
-                  "Título da Viagem",
+                  viagem.nomeViagem, // pega do banco
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ],
@@ -136,12 +119,39 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Widget listaHistorico(BuildContext context) {
+    return FutureBuilder<List<EcoDriveModel>>(
+      future: controller.listarViagens(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final viagens = snapshot.data ?? [];
+
+        if (viagens.isEmpty) {
+          return Center(child: Text("Nenhuma viagem salva."));
+        }
+
+        return ListView.builder(
+          itemCount: viagens.length,
+          itemBuilder: (context, index) {
+            final viagem = viagens[index];
+            return itemViagem(context, viagem);
+          },
+        );
+      },
+    );
+  }
+
   // Função para o botão de iniciar viagem
-  Widget btnIniciaViagem(){
+  Widget btnIniciaViagem(BuildContext context) {
     return FloatingActionButton.extended(
-      label: Text("Iniciar Viagem", style: TextStyle(
-        color: AppColors.colorMainText,
-      ),
+      label: Text(
+        "Iniciar Viagem",
+        style: TextStyle(
+          color: AppColors.colorMainText,
+        ),
       ),
       onPressed: () async {
         final novaViagem = EcoDriveModel(
@@ -150,9 +160,15 @@ class HomePage extends StatelessWidget {
         );
         await controller.salvarViagem(novaViagem);
         print("Viagem salva com sucesso!");
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
       },
       backgroundColor: AppColors.colorMain,
-      icon: Icon(Icons.directions_car, color:AppColors.colorMainText),
+      icon: Icon(Icons.directions_car, color: AppColors.colorMainText),
     );
   }
+
 }
