@@ -1,4 +1,5 @@
 import 'package:ecoDrive/shared/app_settings.dart';
+import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
@@ -26,8 +27,25 @@ class BluetoothStatusWidget extends StatelessWidget {
                 children: [
                   Column(
                     children: [
-                      Text("Bluetooth: "),
-                      Text("ODB")
+                      //Text("Bluetooth: ${(AppSettings.bluetoothIsEnabled? "Ativo": "Inativo", style: TextStyle(color: AppSettings.bluetoothIsEnabled? AppColors.colorMain : AppColors.colorError))}", style: AppStyles.simpleText),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Bluetooth: ",
+                              style: AppStyles.simpleText.copyWith(color: AppColors.colorBlack),
+                            ),
+                            TextSpan(
+                              text: AppSettings.bluetoothIsEnabled ? "Ativo" : "Inativo",
+                              style: TextStyle(
+                                color: AppSettings.bluetoothIsEnabled ? AppColors.colorMain : AppColors.colorError,
+                                fontSize: 18
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text("ODB", style: AppStyles.simpleText,)
                     ],
                   ),
                   Container(
