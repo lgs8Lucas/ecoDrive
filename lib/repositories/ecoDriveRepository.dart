@@ -15,6 +15,7 @@ class EcoDriveRepository{
     );
   }
 
+  // Método para inserir um novo registro no banco de dados
   Future create(EcoDriveModel model) async{
     try{
       final Database db = await _getDatabse();
@@ -28,5 +29,24 @@ class EcoDriveRepository{
       return;
     }
   }
-}
 
+  Future<List<EcoDriveModel>> _getEcoDrive() async{
+    try{
+      final Database db = await _getDatabse();
+      final List<Map<String, dynamic>> maps = await db.query(tableName);
+
+      return List.generate(
+        maps.length,
+            (i) {
+              return EcoDriveModel.fromMap(maps[i]);
+            },
+      );
+    } catch (ex){
+      print(ex);
+      return new List<EcoDriveModel>();
+    }
+  }
+
+
+
+}

@@ -10,7 +10,6 @@ class EcoDriveModel{
     DateTime? dataViagem,
   }) : dataViagem = dataViagem ?? DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual
 
-  // Converte o objeto em um Map, usado para salvar no banco SQLite
   // Isso é necessário para salvar os dados no banco de dados SQLite
   Map<String, dynamic> toMap() {
     return {
