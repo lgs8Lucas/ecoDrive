@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/viagemPage.dart';
+import 'package:ecoDrive/shared/app_colors.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -10,16 +11,16 @@ class HomePage extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.colorMainText,
             letterSpacing: 1.0,
           ),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.colorMain,
       ),
       body: Container(
         padding: EdgeInsets.all(20),
         width: double.infinity,
-        color: Color(0xFFF5F7FA),
+        color: AppColors.colorMainText,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -29,7 +30,7 @@ class HomePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey[750],
+                color: AppColors.colorBlack,
                 letterSpacing: 1.0,
               ),
             ),
@@ -105,7 +106,7 @@ class HomePage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(left: 30, right: 30, top: 10, bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppColors.colorAlterBackground,
         borderRadius: BorderRadius.circular(40), // Define o raio da borda
       ),
       child: Row(
@@ -121,7 +122,7 @@ class HomePage extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: bluetooth ? Colors.green : Colors.red,
+              color: bluetooth ? AppColors.colorMain : Colors.red,
               shape: BoxShape.circle,
 
             ),
@@ -166,13 +167,13 @@ class HomePage extends StatelessWidget {
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.all(10),
         height: 100,
-        color: Colors.grey[300],
+        color: AppColors.colorAlterBackground,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(Icons.calendar_today, color: Colors.green),
+                Icon(Icons.calendar_today, color: AppColors.colorMain),
                 SizedBox(width: 10),
                 Text(
                   "Data da Viagem",
@@ -183,7 +184,7 @@ class HomePage extends StatelessWidget {
             SizedBox(height: 20),
             Row(
               children: <Widget>[
-                Icon(Icons.title, color: Colors.green),
+                Icon(Icons.title, color: AppColors.colorMain),
                 SizedBox(width: 10),
                 Text(
                   "Título da Viagem",
@@ -200,10 +201,10 @@ class HomePage extends StatelessWidget {
   Widget btnIniciaViagem(){
     return FloatingActionButton.extended(
       label: Text("Iniciar Viagem", style: TextStyle(
-        color: Colors.white
+        color: AppColors.colorMainText,
       ),), onPressed: () {},
-      backgroundColor: Colors.green,
-      icon: Icon(Icons.directions_car, color: Colors.white),
+      backgroundColor: AppColors.colorMain,
+      icon: Icon(Icons.directions_car, color:AppColors.colorMainText),
 
 
 
