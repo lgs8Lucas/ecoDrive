@@ -1,3 +1,4 @@
+import 'package:ecoDrive/services/ble_service.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/homePage.dart';
@@ -12,6 +13,7 @@ class App extends StatelessWidget{
   Widget build(BuildContext context){
     AppSettings.screenH = MediaQuery.of(context).size.height;
     AppSettings.screenW = MediaQuery.of(context).size.width;
+    BleService.startMonitoringBluetoothStatus();
     return MaterialApp(
       title: 'EcoDrive',
       debugShowCheckedModeBanner: false,
@@ -22,3 +24,4 @@ class App extends StatelessWidget{
     );
   }
 }
+

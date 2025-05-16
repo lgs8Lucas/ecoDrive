@@ -1,6 +1,8 @@
+import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/viagemPage.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
+import 'package:ecoDrive/widgets/stream_builder.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -35,7 +37,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            Container( child: conexaoODB()),
+            Container( child: BluetoothStatusWidget()),
             SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,42 +102,6 @@ class HomePage extends StatelessWidget {
       child: Image.asset("assets/relatorio.png"),
     );
   }
-
-  Widget conexaoODB(){
-    var bluetooth = true; // Simulando o estado do Bluetooth
-    return Container(
-      padding: EdgeInsets.only(left: 30, right: 30, top: 10, bottom: 10),
-      decoration: BoxDecoration(
-        color: AppColors.colorAlterBackground,
-        borderRadius: BorderRadius.circular(40), // Define o raio da borda
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              Text("Bluetooth: "),
-              Text("ODB")
-            ],
-          ),
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: bluetooth ? AppColors.colorMain : Colors.red,
-              shape: BoxShape.circle,
-
-            ),
-            child: Icon(
-              bluetooth ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-              color: Colors.white,
-            ),
-          )
-        ]
-      )
-    );
-  }
-  
   
   // Função para a lista de corridas
   Widget listaHistorico(BuildContext context) {
