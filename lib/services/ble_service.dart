@@ -17,4 +17,19 @@ class BleService{
       }
     });
   }
+
+  static void stopMonitoringBluetoothStatus() {
+    // Cancelando a assinatura quando não for mais necessário
+    _bluetoothStateSubscription?.cancel();
+  }
+
+  static Future<void> connectedToODB(BluetoothDevice device) async {
+    try{
+      
+      // Verifica se o ODB está conectado
+    } catch (e) {
+
+    }
+  }
+
 }
