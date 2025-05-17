@@ -1,3 +1,4 @@
+import 'package:ecoDrive/pages/home_page.dart';
 import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
@@ -8,7 +9,7 @@ import 'package:ecoDrive/models/eco_drive_model.dart';
 final EcoDriveController controller = EcoDriveController();
 
 // Função para deletar uma viagem
-void _deletarViagem(EcoDriveModel viagem) async {
+Future<void> _deletarViagem(EcoDriveModel viagem) async {
   await controller.deletarViagem(viagem);
   controller.listarViagens();
 }
@@ -31,7 +32,10 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
         title: Text(viagem.dataViagem.toString(), style: AppStyles.simpleText),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
-          onPressed: () => _deletarViagem(viagem),
+          onPressed: () async {
+            await _deletarViagem(viagem);
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+          },
         ),
       ),
     );
