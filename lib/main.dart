@@ -9,10 +9,7 @@ import 'package:sqflite/sqflite.dart';
 
 void main()  async  {
 
-  WidgetsFlutterBinding.ensureInitialized(); // Necessário para usar funções async
-
-  //await deletarBancoAntigo(); // Apaga o banco antigo, se existir
-
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(App());
 }
 
