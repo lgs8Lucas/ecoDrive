@@ -10,6 +10,12 @@ import 'package:ecoDrive/models/eco_drive_model.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
+// Função para deletar uma viagem
+void _deletarViagem(EcoDriveModel viagem) async {
+  await controller.deletarViagem(viagem);
+  controller.listarViagens();
+}
+
 class HomePage extends StatelessWidget {
   @override
 
@@ -70,27 +76,30 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView(
-                physics: BouncingScrollPhysics(),
-                scrollDirection: Axis.vertical,
-                children: [
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                  TripList(),
-                ],
+              child: FutureBuilder<List<Widget>>(
+                future: listarHistorico(context),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  final historicoWidgets = snapshot.data ?? [];
+
+                  return ListView(
+                    physics: BouncingScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    children: [
+                      ...historicoWidgets,
+                    ],
+                  );
+                },
               ),
             )
           ],
         ),
       ),
+
+
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async{
@@ -100,7 +109,7 @@ class HomePage extends StatelessWidget {
           );
           await controller.salvarViagem(novaViagem);
           print("Viagem salva com sucesso!");
-          Navigator.pushReplacement( // Navega para a HomePage, substituindo a página atual
+          Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomePage()),
           );
@@ -112,4 +121,5 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+
 }
