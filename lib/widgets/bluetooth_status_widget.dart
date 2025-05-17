@@ -1,3 +1,4 @@
+import 'package:ecoDrive/services/ble_service.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ class BluetoothStatusWidget extends StatelessWidget {
     return StreamBuilder<BluetoothAdapterState>(
       stream: FlutterBluePlus.adapterState,
       builder: (context, snapshot) {
+        BleService.connectedToODB();
         final state = snapshot.data;
         AppSettings.bluetoothIsEnabled = state == BluetoothAdapterState.on;
         bool connection = AppSettings.bluetoothIsEnabled && AppSettings.odbIsConnected;
