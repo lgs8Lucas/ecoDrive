@@ -5,6 +5,10 @@ import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
 import '../widgets/faq_dialog.dart'; // importe aqui
+import 'package:ecoDrive/controllers/eco_drive_controller.dart';
+import 'package:ecoDrive/models/eco_drive_model.dart';
+
+final EcoDriveController controller = EcoDriveController();
 
 class HomePage extends StatelessWidget {
   @override
@@ -89,7 +93,18 @@ class HomePage extends StatelessWidget {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: (){},
+        onPressed: () async{
+          final novaViagem = EcoDriveModel(
+              nomeViagem: "Viagem Teste 4",
+              dataViagem: DateTime.now(),
+          );
+          await controller.salvarViagem(novaViagem);
+          print("Viagem salva com sucesso!");
+          Navigator.pushReplacement( // Navega para a HomePage, substituindo a página atual
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,
         label: Text('Iniciar Viagem'),
