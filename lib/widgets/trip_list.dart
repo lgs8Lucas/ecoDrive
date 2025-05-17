@@ -28,7 +28,7 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
         onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ViagemPage()));
         },
-        subtitle: Text(viagem.nomeViagem, style: AppStyles.simpleText),
+        subtitle: Text(viagem.avalicaoViagem, style: AppStyles.simpleText),
         title: Text(viagem.dataViagem.toString(), style: AppStyles.simpleText),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),

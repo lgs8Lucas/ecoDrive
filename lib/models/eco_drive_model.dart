@@ -1,12 +1,12 @@
 class EcoDriveModel{
   int? id = 0;
-  String nomeViagem;
+  String avalicaoViagem;
   DateTime dataViagem;
 
   // Construtor com parâmetros obrigatórios
   EcoDriveModel({
     this.id,
-    required this.nomeViagem,
+    required this.avalicaoViagem,
     DateTime? dataViagem,
   }) : dataViagem = dataViagem ?? DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual
 
@@ -14,7 +14,7 @@ class EcoDriveModel{
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'nomeViagem': nomeViagem,
+      'avalicaoViagem': avalicaoViagem,
       'dataViagem': dataViagem.toIso8601String(), //Formato compativel como banco de dados
      };
   }
@@ -23,7 +23,7 @@ class EcoDriveModel{
   factory EcoDriveModel.fromMap(Map<String, dynamic> map) {
     return EcoDriveModel(
       id: map['id'] ?? 0,
-      nomeViagem: map['nomeViagem'] ?? '',
+      avalicaoViagem: map['avalicaoViagem'] ?? '',
       dataViagem: DateTime.tryParse(map['dataViagem'] ?? '') ?? DateTime.now(),
     );
   }

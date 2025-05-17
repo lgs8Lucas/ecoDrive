@@ -26,7 +26,7 @@ class ViagemPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final viagem = viagens[index];
               return ListTile(
-                title: Text(viagem.nomeViagem),
+                title: Text(viagem.avalicaoViagem),
                 subtitle: Text(viagem.dataViagem.toString()),
                 trailing: IconButton(
                 icon: Icon(Icons.delete, color: Colors.red),

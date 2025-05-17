@@ -3,8 +3,16 @@ import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/home_page.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
+import 'settings.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqflite/sqflite.dart';
 
-void main() {
+void main()  async  {
+
+  WidgetsFlutterBinding.ensureInitialized(); // Necessário para usar funções async
+
+  //await deletarBancoAntigo(); // Apaga o banco antigo, se existir
+
   runApp(App());
 }
 

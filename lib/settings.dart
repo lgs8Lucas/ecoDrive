@@ -3,7 +3,7 @@ const String tableName = "ecoDriveTable"; //Criando o nome da tabela do banco de
 const String createEcoDriveTableScript = """
 CREATE TABLE ecoDriveTable (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nomeViagem TEXT,
+    avalicaoViagem TEXT,
     dataViagem TEXT
 );
 """;

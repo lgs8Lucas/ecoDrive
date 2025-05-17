@@ -104,7 +104,7 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async{
           final novaViagem = EcoDriveModel(
-              nomeViagem: "Viagem Teste 4",
+              avalicaoViagem: "Excelente",
               dataViagem: DateTime.now(),
           );
           await controller.salvarViagem(novaViagem);
