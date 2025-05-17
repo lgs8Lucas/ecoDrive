@@ -1,5 +1,5 @@
 import 'package:ecoDrive/models/eco_drive_model.dart';
-import 'package:ecoDrive/repositories/eco_drive_repository.dart';
+import 'package:ecoDrive/repositories/eco_drive_dao.dart';
 
 class EcoDriveController{
   final EcoDriveRepository _repository = EcoDriveRepository();
