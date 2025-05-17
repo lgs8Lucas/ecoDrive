@@ -1,3 +1,4 @@
+import 'package:ecoDrive/services/ble_service.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';
@@ -6,15 +7,16 @@ import 'package:ecoDrive/shared/app_colors.dart';
 
 class BluetoothStatusWidget extends StatelessWidget {
   const BluetoothStatusWidget({super.key});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<BluetoothAdapterState>(
       stream: FlutterBluePlus.adapterState,
       builder: (context, snapshot) {
+        BleService.connectedToODB();
         final state = snapshot.data;
         AppSettings.bluetoothIsEnabled = state == BluetoothAdapterState.on;
-        var connection = AppSettings.bluetoothIsEnabled;
+        bool connection = AppSettings.bluetoothIsEnabled && AppSettings.odbIsConnected;
+
 
         return Container(
             padding: EdgeInsets.only(left: 30, right: 30, top: 10, bottom: 10),
@@ -26,14 +28,14 @@ class BluetoothStatusWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      //Text("Bluetooth: ${(AppSettings.bluetoothIsEnabled? "Ativo": "Inativo", style: TextStyle(color: AppSettings.bluetoothIsEnabled? AppColors.colorMain : AppColors.colorError))}", style: AppStyles.simpleText),
                       Text.rich(
                         TextSpan(
                           children: [
                             TextSpan(
                               text: "Bluetooth: ",
-                              style: AppStyles.simpleText.copyWith(color: AppColors.colorBlack),
+                              style: AppStyles.simpleText,
                             ),
                             TextSpan(
                               text: AppSettings.bluetoothIsEnabled ? "Ativo" : "Inativo",
@@ -45,7 +47,23 @@ class BluetoothStatusWidget extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text("ODB", style: AppStyles.simpleText,)
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "ODB: ",
+                              style: AppStyles.simpleText,
+                            ),
+                            TextSpan(
+                              text: AppSettings.odbIsConnected ? "Conectado ao..." : "Desconectado",
+                              style: TextStyle(
+                                  color: AppSettings.odbIsConnected ? AppColors.colorMain : AppColors.colorError,
+                                  fontSize: 18
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   Container(
@@ -54,7 +72,6 @@ class BluetoothStatusWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: connection ? AppColors.colorMain : Colors.red,
                       shape: BoxShape.circle,
-
                     ),
                     child: Icon(
                       connection ? Icons.bluetooth_connected : Icons.bluetooth_disabled,

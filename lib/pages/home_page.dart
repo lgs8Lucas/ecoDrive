@@ -1,29 +1,49 @@
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/widgets/trip_list.dart';
 import 'package:flutter/material.dart';
-import 'package:ecoDrive/pages/viagemPage.dart';
+import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
+import '../widgets/faq_dialog.dart'; // importe aqui
 
 class HomePage extends StatelessWidget {
   @override
+
+  void _showFAQ(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => const FAQDialog(),
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('EcoDrive',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 32,
             fontWeight: FontWeight.w700,
-            color: AppColors.colorMainText,
+            color: AppColors.colorMain,
             letterSpacing: 1.0,
           ),
         ),
-        backgroundColor: AppColors.colorMain,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.black),
+            onPressed: () => _showFAQ(context),
+            tooltip: 'Ajuda',
+          ),
+        ],
+        backgroundColor: AppColors.colorWhite,
       ),
       body: Container(
         padding: EdgeInsets.all(20),
         width: double.infinity,
-        color: AppColors.colorMainText,
+        decoration: BoxDecoration(
+          color: AppColors.colorWhite,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -47,6 +67,7 @@ class HomePage extends StatelessWidget {
             ),
             Expanded(
               child: ListView(
+                physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.vertical,
                 children: [
                   TripList(),
@@ -66,7 +87,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: (){},
         backgroundColor: AppColors.colorMain,
