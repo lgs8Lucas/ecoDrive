@@ -32,6 +32,9 @@ dependencies:
     sdk: flutter
   flutter_blue_plus: ^1.35.5
 
+  # Importação de datatime
+  intl: ^0.18.1
+
   # Importação de Plugins Essenciais no Flutter (SQLite, Autenticação, Abertura de URLs)
   sqflite: ^2.3.0
   path: ^1.8.0

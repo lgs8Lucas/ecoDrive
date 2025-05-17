@@ -5,6 +5,7 @@ import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
+import 'package:intl/intl.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
@@ -29,7 +30,9 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ViagemPage()));
         },
         subtitle: Text("Avalição: ${viagem.avalicaoViagem}", style: AppStyles.simpleText),
-        title: Text(viagem.dataViagem.toString(), style: AppStyles.simpleText),
+        title: Text(
+          "Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem),
+          style: AppStyles.simpleText),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
           onPressed: () async {
