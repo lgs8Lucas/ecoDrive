@@ -4,9 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
+import '../widgets/faq_dialog.dart'; // importe aqui
 
 class HomePage extends StatelessWidget {
   @override
+
+  void _showFAQ(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => const FAQDialog(),
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -18,6 +29,13 @@ class HomePage extends StatelessWidget {
             letterSpacing: 1.0,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.black),
+            onPressed: () => _showFAQ(context),
+            tooltip: 'Ajuda',
+          ),
+        ],
         backgroundColor: AppColors.colorWhite,
       ),
       body: Container(
