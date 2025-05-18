@@ -5,5 +5,5 @@ class AppSettings {
   static double screenW = 0;
   static bool bluetoothIsEnabled = false;
   static bool odbIsConnected = false;
-  static FlutterBluePlus fBle = FlutterBluePlus();
+  static BluetoothDevice? connectedDevice;
 }
