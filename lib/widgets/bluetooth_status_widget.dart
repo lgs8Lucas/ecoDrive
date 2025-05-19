@@ -1,3 +1,4 @@
+import 'package:ecoDrive/widgets/bluetooth_devices_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
@@ -11,19 +12,17 @@ class BluetoothStatusWidget extends StatefulWidget {
 }
 
 class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
+  void _showDevices(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => const BluetoothDevicesListWidget(),
+    );
+  }
+
   bool _bluetoothEnabled = false;
   bool _odbConnected = false;
-
-  void handleSearchODB() {
-    if (_bluetoothEnabled) {
-      BleService.startScanning(targetDeviceName: "OBD");
-    } else {
-      // Opcional: mostrar alerta que bluetooth está desligado
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bluetooth está desligado')),
-      );
-    }
-  }
 
   @override
   void initState() {
@@ -34,11 +33,6 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
       setState(() {
         _bluetoothEnabled = enabled;
       });
-
-      // Opcional: iniciar scan automaticamente quando Bluetooth ativar
-      if (enabled && !_odbConnected) {
-        handleSearchODB();
-      }
     });
 
     BleService.odbConnectionStateStream.listen((connected) {
@@ -46,11 +40,6 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
         _odbConnected = connected;
       });
     });
-
-    // Busca inicial (se já estiver ligado)
-    if (_bluetoothEnabled) {
-      handleSearchODB();
-    }
   }
 
   @override
@@ -82,9 +71,10 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
                     TextSpan(
                       text: _bluetoothEnabled ? "Ativo" : "Inativo",
                       style: TextStyle(
-                        color: _bluetoothEnabled
-                            ? AppColors.colorMain
-                            : AppColors.colorError,
+                        color:
+                            _bluetoothEnabled
+                                ? AppColors.colorMain
+                                : AppColors.colorError,
                         fontSize: 18,
                       ),
                     ),
@@ -102,9 +92,10 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
                         TextSpan(
                           text: _odbConnected ? "Conectado" : "Desconectado",
                           style: TextStyle(
-                            color: _odbConnected
-                                ? AppColors.colorMain
-                                : AppColors.colorError,
+                            color:
+                                _odbConnected
+                                    ? AppColors.colorMain
+                                    : AppColors.colorError,
                             fontSize: 18,
                           ),
                         ),
@@ -119,9 +110,10 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
                       shape: BoxShape.circle,
                     ),
                     child: GestureDetector(
-                      onTap: handleSearchODB,
+                      onTap: () => _showDevices(context),
                       child: Icon(
-                        Icons.bluetooth_searching, // Ícone mais adequado para conexão
+                        Icons.bluetooth_searching,
+                        // Ícone mais adequado para conexão
                         size: 18,
                         color: AppColors.colorBlack,
                       ),

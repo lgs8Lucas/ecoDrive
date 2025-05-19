@@ -29,38 +29,7 @@ class BleService {
   }
 
   static void startScanning({required String targetDeviceName}) {
-    if (_scanSubscription != null) return;
 
-    _scanSubscription = FlutterBluePlus.scan().listen((ScanResult result) async {
-      if (result.device.name.toLowerCase().contains(targetDeviceName.toLowerCase())) {
-        stopScanning();
-
-        try {
-          // Conecta com timeout
-          await result.device.connect(timeout: Duration(seconds: 10));
-          AppSettings.connectedDevice = result.device;
-
-          _odbConnectionStateController.add(true);
-
-          // Escuta mudanças no estado do dispositivo (conectado/desconectado)
-          _cancelDeviceStateSubscription();
-          _deviceStateSubscription = result.device.state.listen((deviceState) {
-            if (deviceState == BluetoothDeviceState.disconnected) {
-              _odbConnectionStateController.add(false);
-              AppSettings.connectedDevice = null;
-              _cancelDeviceStateSubscription();
-            }
-          });
-        } catch (e) {
-          print("Erro ao conectar: $e");
-          _odbConnectionStateController.add(false);
-          AppSettings.connectedDevice = null;
-        }
-      }
-    }, onError: (e) {
-      print("Erro na varredura: $e");
-      stopScanning();
-    });
   }
 
   static void stopScanning() {
