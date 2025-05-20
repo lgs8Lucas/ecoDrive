@@ -8,16 +8,28 @@ class BluetoothDevicesListWidget extends StatefulWidget {
   const BluetoothDevicesListWidget({super.key});
 
   @override
-  _BluetoothDevicesListWidgetState createState() =>
-      _BluetoothDevicesListWidgetState();
+  _BluetoothDevicesListWidgetState createState() => _BluetoothDevicesListWidgetState();
 }
 
-class _BluetoothDevicesListWidgetState
-    extends State<BluetoothDevicesListWidget> {
+class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget> {
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    BleService.startScanning();
+    _startScanning();
+  }
+
+  Future<void> _startScanning() async {
+    setState(() {
+      _isLoading = true; // Inicia o estado de carregamento
+    });
+
+    await BleService.startScanning();
+
+    setState(() {
+      _isLoading = false; // Finaliza o estado de carregamento
+    });
   }
 
   @override
@@ -42,7 +54,7 @@ class _BluetoothDevicesListWidgetState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                     const Text(
                       'Escolha o seu ODB-II',
                       style: TextStyle(
@@ -51,25 +63,36 @@ class _BluetoothDevicesListWidgetState
                       ),
                     ),
                     const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _isLoading
+                          ? null // Desativa o botão enquanto está carregando
+                          : () => _startScanning(),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      icon: const Icon(Icons.search, size: 24),
+                      label: Text(
+                        _isLoading ? "Buscando..." : "Buscar Dispositivos",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Container(
                       height: 300,
-                      child: StreamBuilder<List<Map<String, String>>>(
+                      child: _isLoading
+                          ? const Center(child: CircularProgressIndicator()) // Exibe carregamento
+                          : StreamBuilder<List<Map<String, String>>>(
                         stream: BleService.deviceStream,
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
                           if (snapshot.hasError) {
                             return const Center(
                               child: Text("Erro ao carregar dispositivos"),
                             );
                           }
 
-                          // Também trate ConnectionState.none e ConnectionState.active normalmente
                           if (!snapshot.hasData || snapshot.data!.isEmpty) {
                             return const Center(
                               child: Text("Nenhum dispositivo encontrado"),
@@ -83,9 +106,9 @@ class _BluetoothDevicesListWidgetState
                             itemBuilder: (context, index) {
                               final device = devices[index];
                               final deviceName =
-                                  (device["name"]?.isNotEmpty ?? false)
-                                      ? device["name"]!
-                                      : 'Dispositivo sem Nome';
+                              (device["name"]?.isNotEmpty ?? false)
+                                  ? device["name"]!
+                                  : 'Dispositivo sem Nome';
                               final deviceId =
                                   device["id"] ?? 'ID desconhecido';
 

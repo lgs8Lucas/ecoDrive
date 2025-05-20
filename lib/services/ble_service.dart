@@ -46,7 +46,7 @@ class BleService {
     // Emite evento inicial vazio para atualizar UI e sair do waiting
     _deviceStreamController.add([]);
 
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+    FlutterBluePlus.startScan(timeout: const Duration(seconds: 8));
 
     _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       for (ScanResult r in results) {
