@@ -6,14 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
 import 'package:intl/intl.dart';
+import 'package:ecoDrive/repositories/eco_drive_repository.dart';
+import 'package:ecoDrive/widgets/confirmDialog.dart';
 
 final EcoDriveController controller = EcoDriveController();
-
-// Função para deletar uma viagem
-Future<void> _deletarViagem(EcoDriveModel viagem) async {
-  await controller.deletarViagem(viagem);
-  controller.listarViagens();
-}
+final EcoDriveRepository repository = EcoDriveRepository();
 
 Future<List<Widget>> listarHistorico(BuildContext context) async {
   final viagens = await controller.listarViagens();
@@ -35,10 +32,19 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
           style: AppStyles.simpleText),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
-          onPressed: () async {
-            await _deletarViagem(viagem);
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-          },
+            onPressed: () {
+              confirmDialog(
+                context: context,
+                menssage: "Deseja realmente excluir esta viagem?",
+                function: () async {
+                  await repository.delete(viagem);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              );
+            },
         ),
       ),
     );

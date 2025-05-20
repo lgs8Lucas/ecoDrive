@@ -40,7 +40,7 @@ class FAQDialog extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       '1. Garanta que seu dispositivo ODB-II esteja conectado ao seu veículo e que ambos estejam operantes\n'
-                      '2. Conecte-se ao dispositivo ODB-II através do bluetooth do seu smartphone'
+                      '2. Conecte-se ao dispositivo ODB-II através do bluetooth do seu smartphone\n'
                       '3. Acompanhe suas métricas de emissão de CO₂.\n'
                       '4. Explore dicas para dirigir de forma mais sustentável.\n\n'
                       'Esse app visa ajudar você a ser mais ecológico no trânsito!',

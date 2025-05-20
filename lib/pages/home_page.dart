@@ -10,12 +10,6 @@ import 'package:ecoDrive/models/eco_drive_model.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
-// Função para deletar uma viagem
-void _deletarViagem(EcoDriveModel viagem) async {
-  await controller.deletarViagem(viagem);
-  controller.listarViagens();
-}
-
 class HomePage extends StatelessWidget {
   @override
 

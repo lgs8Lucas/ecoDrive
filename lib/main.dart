@@ -18,8 +18,6 @@ class App extends StatelessWidget{
   Widget build(BuildContext context){
     AppSettings.screenH = MediaQuery.of(context).size.height;
     AppSettings.screenW = MediaQuery.of(context).size.width;
-    BleService.startMonitoringBluetoothStatus();
-    BleService.connectedToODB();
     return MaterialApp(
       title: 'EcoDrive',
       debugShowCheckedModeBanner: false,
