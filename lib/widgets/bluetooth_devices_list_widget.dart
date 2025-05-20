@@ -37,9 +37,22 @@ class BluetoothDevicesListWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      '',
-                      style: AppStyles.simpleText,
+                    Container(
+                      height: 300,
+                      child: ListView(
+                        children: const <Widget>[
+                          ListTile(
+                            title: Text('ODB-II'),
+                            subtitle: Text('MAC: '),
+                          ),
+                          Divider(height: 0),
+                          ListTile(
+                            title: Text('QCY-T13'),
+                            subtitle: Text('MAC: '),
+                          ),
+                          Divider(height: 0),
+                        ],
+                      ),
                     ),
                   ],
                 ),
