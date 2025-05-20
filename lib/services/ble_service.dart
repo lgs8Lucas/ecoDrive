@@ -14,10 +14,16 @@ class BleService {
       _odbConnectionStateController.stream;
 
   static StreamSubscription<BluetoothAdapterState>? _bluetoothStateSubscription;
-  static StreamSubscription<ScanResult>? _scanSubscription;
+  static StreamSubscription<List<ScanResult>>?  _scanSubscription;
   static StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
 
   static final List<Map<String, String>> devices = [];
+
+  static final StreamController<List<Map<String, String>>> _deviceStreamController =
+  StreamController<List<Map<String, String>>>.broadcast();
+
+  static Stream<List<Map<String, String>>> get deviceStream => _deviceStreamController.stream;
+
 
   static void initialize() {
     // Escuta o estado do adaptador Bluetooth
@@ -35,35 +41,36 @@ class BleService {
   }
 
   static Future<void> startScanning() async {
-    // Limpa a lista de dispositivos encontrados
     devices.clear();
 
-    // Inicia a varredura
+    // Emite evento inicial vazio para atualizar UI e sair do waiting
+    _deviceStreamController.add([]);
+
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
 
-    // Inscreve-se nos resultados da varredura
-    final subscription = FlutterBluePlus.scanResults.listen((results) {
+    _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       for (ScanResult r in results) {
-        // Verifica se o dispositivo já está na lista
-        if (!devices.any(
-          (device) => device['id'] == r.device.remoteId.toString(),
-        )) {
+        if (!devices.any((device) => device['id'] == r.device.remoteId.toString())) {
           devices.add({
             'id': r.device.remoteId.toString(),
-            'name':
-                r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
+            'name': r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
+          _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
       }
     });
 
-    // Aguarda o término da varredura e cancela a inscrição
     await Future.delayed(const Duration(seconds: 5));
-    await subscription.cancel();
 
-    // Para a varredura explicitamente
+    await _scanSubscription?.cancel();
+    _scanSubscription = null;
+
     FlutterBluePlus.stopScan();
+
+    // Emitir o estado final (pode ser vazio, para garantir que UI atualize)
+    _deviceStreamController.add(List<Map<String, String>>.from(devices));
   }
+
 
   static void stopScanning() {
     _scanSubscription?.cancel();

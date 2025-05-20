@@ -1,10 +1,24 @@
 import 'dart:ui';
+import 'package:ecoDrive/services/ble_service.dart';
 import 'package:flutter/material.dart';
 
 import '../shared/app_styles.dart';
 
-class BluetoothDevicesListWidget extends StatelessWidget {
+class BluetoothDevicesListWidget extends StatefulWidget {
   const BluetoothDevicesListWidget({super.key});
+
+  @override
+  _BluetoothDevicesListWidgetState createState() =>
+      _BluetoothDevicesListWidgetState();
+}
+
+class _BluetoothDevicesListWidgetState
+    extends State<BluetoothDevicesListWidget> {
+  @override
+  void initState() {
+    super.initState();
+    BleService.startScanning();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +53,54 @@ class BluetoothDevicesListWidget extends StatelessWidget {
                     const SizedBox(height: 16),
                     Container(
                       height: 300,
-                      child: ListView(
-                        children: const <Widget>[
-                          ListTile(
-                            title: Text('ODB-II'),
-                            subtitle: Text('MAC: '),
-                          ),
-                          Divider(height: 0),
-                          ListTile(
-                            title: Text('QCY-T13'),
-                            subtitle: Text('MAC: '),
-                          ),
-                          Divider(height: 0),
-                        ],
+                      child: StreamBuilder<List<Map<String, String>>>(
+                        stream: BleService.deviceStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return const Center(
+                              child: Text("Erro ao carregar dispositivos"),
+                            );
+                          }
+
+                          // Também trate ConnectionState.none e ConnectionState.active normalmente
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Center(
+                              child: Text("Nenhum dispositivo encontrado"),
+                            );
+                          }
+
+                          final devices = snapshot.data!;
+
+                          return ListView.builder(
+                            itemCount: devices.length,
+                            itemBuilder: (context, index) {
+                              final device = devices[index];
+                              final deviceName =
+                                  (device["name"]?.isNotEmpty ?? false)
+                                      ? device["name"]!
+                                      : 'Dispositivo sem Nome';
+                              final deviceId =
+                                  device["id"] ?? 'ID desconhecido';
+
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    title: Text(deviceName),
+                                    subtitle: Text(deviceId),
+                                  ),
+                                  const Divider(height: 0),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
                   ],
