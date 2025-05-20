@@ -7,7 +7,6 @@ import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
 import '../widgets/faq_dialog.dart'; // importe aqui
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
-import 'package:ecoDrive/widgets/new_trip.dart';
 
 final EcoDriveController controller = EcoDriveController();
 

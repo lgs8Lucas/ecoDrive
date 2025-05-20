@@ -49,4 +49,10 @@ class BleService {
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
   }
+
+  static Future<bool> isBluetoothOn() async {
+    BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
+    return state == BluetoothAdapterState.on;
+  }
+
 }

@@ -61,6 +61,7 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Coluna com textos Bluetooth e OBD
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -71,10 +72,7 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
                     TextSpan(
                       text: _bluetoothEnabled ? "Ativo" : "Inativo",
                       style: TextStyle(
-                        color:
-                            _bluetoothEnabled
-                                ? AppColors.colorMain
-                                : AppColors.colorError,
+                        color: _bluetoothEnabled ? AppColors.colorMain : AppColors.colorError,
                         fontSize: 18,
                       ),
                     ),
@@ -84,45 +82,45 @@ class _BluetoothStatusWidgetState extends State<BluetoothStatusWidget> {
               const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: "OBD: ", style: AppStyles.simpleText),
-                        TextSpan(
-                          text: _odbConnected ? "Conectado" : "Desconectado",
-                          style: TextStyle(
-                            color:
-                                _odbConnected
-                                    ? AppColors.colorMain
-                                    : AppColors.colorError,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
+                  children: [
+                    Text(
+                      "ODB: ",
+                      style: AppStyles.simpleText,
                     ),
-                  ),
-                  const SizedBox(width: 5),
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.colorBlack.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: GestureDetector(
+                    GestureDetector(
                       onTap: () => _showDevices(context),
-                      child: Icon(
-                        Icons.bluetooth_searching,
-                        // Ícone mais adequado para conexão
-                        size: 18,
-                        color: AppColors.colorBlack,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.colorBlack.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _odbConnected ? "Conectado" : "Desconectado",
+                              style: TextStyle(
+                                color: _odbConnected ? AppColors.colorMain : AppColors.colorError,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.bluetooth_searching,
+                              size: 20,
+                              color: _odbConnected ? AppColors.colorMain : AppColors.colorError,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
+                    )
                 ],
               ),
             ],
           ),
+          // Indicador circular do status da conexão
           Container(
             width: 50,
             height: 50,
