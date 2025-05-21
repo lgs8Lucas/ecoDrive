@@ -1,5 +1,3 @@
-// lib/services/ble_service.dart
-
 import 'dart:async';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -48,17 +46,21 @@ class BleService {
             'id': r.device.remoteId.toString(),
             'name': r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
+
           _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
       }
     });
 
-    await Future.delayed(const Duration(seconds: 5));
+    // Aguarda um tempo extra para garantir que dispositivos foram escaneados
+    await Future.delayed(const Duration(seconds: 6));
 
     await _scanSubscription?.cancel();
     _scanSubscription = null;
 
     FlutterBluePlus.stopScan();
+
+    // Emissão final para garantir que o StreamBuilder veja os dados
     _deviceStreamController.add(List<Map<String, String>>.from(devices));
   }
 
@@ -78,6 +80,7 @@ class BleService {
     _cancelDeviceStateSubscription();
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
+    _deviceStreamController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
