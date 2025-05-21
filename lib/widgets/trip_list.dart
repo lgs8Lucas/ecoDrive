@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
 import 'package:intl/intl.dart';
-import 'package:ecoDrive/repositories/eco_drive_repository.dart';
+import 'package:ecoDrive/repositories/eco_drive_dao.dart';
 import 'package:ecoDrive/widgets/confirmDialog.dart';
 
 final EcoDriveController controller = EcoDriveController();
