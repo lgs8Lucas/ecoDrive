@@ -1,3 +1,4 @@
+import 'package:ecoDrive/pages/eco_drive_page.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/widgets/trip_list.dart';
 import 'package:flutter/material.dart';
@@ -96,6 +97,7 @@ class HomePage extends StatelessWidget {
 
 
       floatingActionButton: FloatingActionButton.extended(
+        /*
         onPressed: () async{
           final novaViagem = EcoDriveModel(
               avalicaoViagem: "Excelente",
@@ -106,6 +108,13 @@ class HomePage extends StatelessWidget {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        },
+        */
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => EcoDrivePage()),
           );
         },
         backgroundColor: AppColors.colorMain,
