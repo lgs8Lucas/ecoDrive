@@ -20,9 +20,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
   }
 
   Future<void> _startScanning() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     bool permissoes = await solicitarPermissoesBluetooth();
 
@@ -36,16 +34,15 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
 
     await BleService.startScanning();
 
+    await Future.delayed(const Duration(seconds: 6));
+
     print("Dispositivos encontrados (widget): ${BleService.devices.length}");
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
   void _selecionarDispositivo(Map<String, String> dispositivo) {
     print("Selecionado: ${dispositivo['name']} - ${dispositivo['id']}");
-    // Aqui você pode chamar o BleService.connect(dispositivo['id']) ou salvar o selecionado
     Navigator.of(context).pop(dispositivo);
   }
 
@@ -73,10 +70,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                     const SizedBox(height: 20),
                     const Text(
                       'Escolha o seu OBD-II',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
@@ -104,12 +98,18 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                           if (snapshot.hasError) {
                             return const Center(child: Text("Erro ao carregar dispositivos"));
                           }
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(child: Text("Nenhum dispositivo encontrado"));
+
+                          if (!snapshot.hasData) {
+                            return const Center(child: Text("Carregando dispositivos..."));
                           }
 
                           final devices = snapshot.data!;
-                          print("Snapshot atual: ${devices.length} dispositivos");
+
+                          print("StreamBuilder recebeu ${devices.length} dispositivos");
+
+                          if (devices.isEmpty) {
+                            return const Center(child: Text("Nenhum dispositivo encontrado"));
+                          }
 
                           return ListView.separated(
                             itemCount: devices.length,
