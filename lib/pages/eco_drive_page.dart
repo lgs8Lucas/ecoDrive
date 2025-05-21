@@ -27,13 +27,13 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
 
   Future<void> _initRpmListener() async {
     List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
-    if (devices.isEmpty) {
-      // Voltar para a HomePage caso não tenha dispositivo conectado
-      if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
-      return;
-    }
+    // if (devices.isEmpty) {
+    //   // Voltar para a HomePage caso não tenha dispositivo conectado
+    //   if (mounted) {
+    //     Navigator.of(context).popUntil((route) => route.isFirst);
+    //   }
+    //   return;
+    // }
     _device = devices.first;
 
     // Escuta o stream de RPM do BleService

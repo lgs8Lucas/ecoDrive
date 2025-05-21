@@ -5,7 +5,7 @@ Future<String?> iniciarViagem({
   required BuildContext context,
   required String menssage,
 }) async {
-  String selectedFuel = 'Gasolina';
+  String seletorCombustivel = 'Gasolina';
 
   return showDialog<String>(
     context: context,
@@ -25,7 +25,7 @@ Future<String?> iniciarViagem({
                     const Text("Combustível: "),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
-                      value: selectedFuel,
+                      value: seletorCombustivel,
                       items: <String>['Gasolina', 'Etanol', 'Diesel']
                           .map((String value) {
                         return DropdownMenuItem<String>(
@@ -35,7 +35,7 @@ Future<String?> iniciarViagem({
                       }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
-                          selectedFuel = newValue!;
+                          seletorCombustivel = newValue!;
                         });
                       },
                     ),
