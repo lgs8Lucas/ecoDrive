@@ -1,52 +1,32 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:ecoDrive/services/ble_service.dart';
-import 'package:ecoDrive/services/permission_handler.dart';
+import '../services/ble_service.dart';
+import '../shared/app_styles.dart';
 
 class BluetoothDevicesListWidget extends StatefulWidget {
   const BluetoothDevicesListWidget({super.key});
 
   @override
-  _BluetoothDevicesListWidgetState createState() => _BluetoothDevicesListWidgetState();
+  State<BluetoothDevicesListWidget> createState() => _BluetoothDevicesListWidgetState();
 }
 
 class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget> {
-  bool _isLoading = false;
+  bool _filterOnlyOdb = false;
 
   @override
   void initState() {
     super.initState();
-    _startScanning();
+    BleService.startScanning();
   }
 
-  Future<void> _startScanning() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    bool permissoes = await solicitarPermissoesBluetooth();
-
-    if (!permissoes) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Permissões de Bluetooth e localização são necessárias.")),
-      );
-      return;
-    }
-
-    await BleService.startScanning();
-
-    print("Dispositivos encontrados (widget): ${BleService.devices.length}");
-
-    setState(() {
-      _isLoading = false;
-    });
+  @override
+  void dispose() {
+    BleService.stopScanning();
+    super.dispose();
   }
 
-  void _selecionarDispositivo(Map<String, String> dispositivo) {
-    print("Selecionado: ${dispositivo['name']} - ${dispositivo['id']}");
-    // Aqui você pode chamar o BleService.connect(dispositivo['id']) ou salvar o selecionado
-    Navigator.of(context).pop(dispositivo);
+  void _refreshScan() {
+    BleService.startScanning();
   }
 
   @override
@@ -62,6 +42,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
               filter: ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
               child: Container(
                 width: double.infinity,
+                constraints: const BoxConstraints(maxHeight: 460),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
@@ -70,61 +51,90 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Escolha o seu OBD-II',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: _isLoading ? null : _startScanning,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    const SizedBox(height: 40),
+                    // Cabeçalho com título, botão refresh e filtro
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Dispositivos Bluetooth',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                      icon: const Icon(Icons.search, size: 24),
-                      label: Text(
-                        _isLoading ? "Buscando..." : "Buscar Dispositivos",
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh, color: Colors.blue),
+                          tooltip: 'Recarregar',
+                          onPressed: _refreshScan,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 300,
-                      child: _isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : StreamBuilder<List<Map<String, String>>>(
+                    // Switch para filtrar só ODB
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Text('Mostrar só ODB'),
+                        Switch(
+                          value: _filterOnlyOdb,
+                          onChanged: (value) {
+                            setState(() {
+                              _filterOnlyOdb = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: StreamBuilder<List<Map<String, String>>>(
                         stream: BleService.deviceStream,
                         builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return const Center(child: Text("Erro ao carregar dispositivos"));
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
                           }
                           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(child: Text("Nenhum dispositivo encontrado"));
+                            return const Center(child: Text('Nenhum dispositivo encontrado'));
+                          }
+                          var devices = List<Map<String, String>>.from(snapshot.data!);
+
+                          // Aplica filtro ODB se ligado
+                          if (_filterOnlyOdb) {
+                            devices = devices.where((device) {
+                              final name = (device['name'] ?? '').toLowerCase();
+                              return name.contains('odb') || name.contains('obd');
+                            }).toList();
                           }
 
-                          final devices = snapshot.data!;
-                          print("Snapshot atual: ${devices.length} dispositivos");
+                          devices.sort((a, b) {
+                            final nameA = a['name'] ?? '';
+                            final nameB = b['name'] ?? '';
+
+                            bool isAValid = nameA.isNotEmpty && nameA != 'Dispositivo sem Nome';
+                            bool isBValid = nameB.isNotEmpty && nameB != 'Dispositivo sem Nome';
+
+                            if (isAValid && !isBValid) return -1;
+                            if (!isAValid && isBValid) return 1;
+                            return 0;
+                          });
+
+                          if (devices.isEmpty) {
+                            return const Center(child: Text('Nenhum dispositivo encontrado'));
+                          }
 
                           return ListView.separated(
                             itemCount: devices.length,
-                            separatorBuilder: (_, __) => const Divider(height: 0),
+                            separatorBuilder: (_, __) => const Divider(),
                             itemBuilder: (context, index) {
                               final device = devices[index];
-                              final deviceName = (device["name"]?.isNotEmpty ?? false)
-                                  ? device["name"]!
-                                  : 'Dispositivo sem Nome';
-                              final deviceId = device["id"] ?? 'ID desconhecido';
-
                               return ListTile(
-                                title: Text(deviceName),
-                                subtitle: Text(deviceId),
-                                onTap: () => _selecionarDispositivo(device),
+                                title: Text(device['name'] ?? 'Dispositivo sem nome'),
+                                subtitle: Text(device['id'] ?? ''),
+                                leading: const Icon(Icons.bluetooth),
+                                onTap: () {
+                                  Navigator.of(context).pop(device);
+                                },
                               );
                             },
                           );
