@@ -1,8 +1,9 @@
-import 'dart:ui';
-import 'package:ecoDrive/services/ble_service.dart';
-import 'package:flutter/material.dart';
+// lib/widgets/bluetooth_devices_list_widget.dart
 
-import '../shared/app_styles.dart';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:ecoDrive/services/ble_service.dart';
+import 'package:ecoDrive/services/permission_handler.dart';
 
 class BluetoothDevicesListWidget extends StatefulWidget {
   const BluetoothDevicesListWidget({super.key});
@@ -22,13 +23,23 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
 
   Future<void> _startScanning() async {
     setState(() {
-      _isLoading = true; // Inicia o estado de carregamento
+      _isLoading = true;
     });
+
+    bool permissoes = await solicitarPermissoesBluetooth();
+
+    if (!permissoes) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Permissões de Bluetooth e localização são necessárias.")),
+      );
+      return;
+    }
 
     await BleService.startScanning();
 
     setState(() {
-      _isLoading = false; // Finaliza o estado de carregamento
+      _isLoading = false;
     });
   }
 
@@ -39,7 +50,6 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
       insetPadding: const EdgeInsets.all(20),
       child: Stack(
         children: [
-          // Fundo com blur e container com conteúdo
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
@@ -64,9 +74,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
-                      onPressed: _isLoading
-                          ? null // Desativa o botão enquanto está carregando
-                          : () => _startScanning(),
+                      onPressed: _isLoading ? null : _startScanning,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -80,46 +88,33 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
+                    SizedBox(
                       height: 300,
                       child: _isLoading
-                          ? const Center(child: CircularProgressIndicator()) // Exibe carregamento
+                          ? const Center(child: CircularProgressIndicator())
                           : StreamBuilder<List<Map<String, String>>>(
                         stream: BleService.deviceStream,
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
-                            return const Center(
-                              child: Text("Erro ao carregar dispositivos"),
-                            );
+                            return const Center(child: Text("Erro ao carregar dispositivos"));
                           }
-
                           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(
-                              child: Text("Nenhum dispositivo encontrado"),
-                            );
+                            return const Center(child: Text("Nenhum dispositivo encontrado"));
                           }
-
                           final devices = snapshot.data!;
-
-                          return ListView.builder(
+                          return ListView.separated(
                             itemCount: devices.length,
+                            separatorBuilder: (_, __) => const Divider(height: 0),
                             itemBuilder: (context, index) {
                               final device = devices[index];
-                              final deviceName =
-                              (device["name"]?.isNotEmpty ?? false)
+                              final deviceName = (device["name"]?.isNotEmpty ?? false)
                                   ? device["name"]!
                                   : 'Dispositivo sem Nome';
-                              final deviceId =
-                                  device["id"] ?? 'ID desconhecido';
+                              final deviceId = device["id"] ?? 'ID desconhecido';
 
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    title: Text(deviceName),
-                                    subtitle: Text(deviceId),
-                                  ),
-                                  const Divider(height: 0),
-                                ],
+                              return ListTile(
+                                title: Text(deviceName),
+                                subtitle: Text(deviceId),
                               );
                             },
                           );
@@ -131,7 +126,6 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
               ),
             ),
           ),
-          // Botão de fechar
           Positioned(
             right: 10,
             top: 10,
