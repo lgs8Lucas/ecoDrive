@@ -56,8 +56,9 @@ Future<String?> iniciarViagem({
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const EcoDrivePage()),);
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const EcoDrivePage()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,     // Cor de fundo
