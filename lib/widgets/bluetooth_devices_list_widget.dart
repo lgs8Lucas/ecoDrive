@@ -7,10 +7,12 @@ class BluetoothDevicesListWidget extends StatefulWidget {
   const BluetoothDevicesListWidget({super.key});
 
   @override
-  State<BluetoothDevicesListWidget> createState() => _BluetoothDevicesListWidgetState();
+  State<BluetoothDevicesListWidget> createState() =>
+      _BluetoothDevicesListWidgetState();
 }
 
-class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget> {
+class _BluetoothDevicesListWidgetState
+    extends State<BluetoothDevicesListWidget> {
   bool _filterOnlyOdb = false;
 
   @override
@@ -91,28 +93,42 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                       child: StreamBuilder<List<Map<String, String>>>(
                         stream: BleService.deviceStream,
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
                           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(child: Text('Nenhum dispositivo encontrado'));
+                            return const Center(
+                              child: Text('Nenhum dispositivo encontrado'),
+                            );
                           }
-                          var devices = List<Map<String, String>>.from(snapshot.data!);
+                          var devices = List<Map<String, String>>.from(
+                            snapshot.data!,
+                          );
 
                           // Aplica filtro ODB se ligado
                           if (_filterOnlyOdb) {
-                            devices = devices.where((device) {
-                              final name = (device['name'] ?? '').toLowerCase();
-                              return name.contains('odb') || name.contains('obd');
-                            }).toList();
+                            devices =
+                                devices.where((device) {
+                                  final name =
+                                      (device['name'] ?? '').toLowerCase();
+                                  return name.contains('odb') ||
+                                      name.contains('obd');
+                                }).toList();
                           }
 
                           devices.sort((a, b) {
                             final nameA = a['name'] ?? '';
                             final nameB = b['name'] ?? '';
 
-                            bool isAValid = nameA.isNotEmpty && nameA != 'Dispositivo sem Nome';
-                            bool isBValid = nameB.isNotEmpty && nameB != 'Dispositivo sem Nome';
+                            bool isAValid =
+                                nameA.isNotEmpty &&
+                                nameA != 'Dispositivo sem Nome';
+                            bool isBValid =
+                                nameB.isNotEmpty &&
+                                nameB != 'Dispositivo sem Nome';
 
                             if (isAValid && !isBValid) return -1;
                             if (!isAValid && isBValid) return 1;
@@ -120,7 +136,9 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                           });
 
                           if (devices.isEmpty) {
-                            return const Center(child: Text('Nenhum dispositivo encontrado'));
+                            return const Center(
+                              child: Text('Nenhum dispositivo encontrado'),
+                            );
                           }
 
                           return ListView.separated(
@@ -129,11 +147,42 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                             itemBuilder: (context, index) {
                               final device = devices[index];
                               return ListTile(
-                                title: Text(device['name'] ?? 'Dispositivo sem nome'),
+                                title: Text(
+                                  device['name'] ?? 'Dispositivo sem nome',
+                                ),
                                 subtitle: Text(device['id'] ?? ''),
                                 leading: const Icon(Icons.bluetooth),
-                                onTap: () {
-                                  Navigator.of(context).pop(device);
+                                onTap: () async {
+                                  try {
+                                    // Tenta conectar ao dispositivo
+                                    await BleService.connectToDevice(
+                                      device['id']!,
+                                    );
+                                    // Fecha o diálogo após a conexão
+                                    Navigator.of(context).pop();
+                                  } catch (e) {
+                                    // Exibe um alerta em caso de erro
+                                    showDialog(
+                                      context: context,
+                                      builder:
+                                          (_) => AlertDialog(
+                                            title: const Text('Erro'),
+                                            content: Text(
+                                              'Falha ao conectar ao dispositivo: $e',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () =>
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop(),
+                                                child: const Text('OK'),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                  }
                                 },
                               );
                             },

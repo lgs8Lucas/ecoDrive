@@ -46,21 +46,17 @@ class BleService {
             'id': r.device.remoteId.toString(),
             'name': r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
-
           _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
       }
     });
 
-    // Aguarda um tempo extra para garantir que dispositivos foram escaneados
-    await Future.delayed(const Duration(seconds: 6));
+    await Future.delayed(const Duration(seconds: 5));
 
     await _scanSubscription?.cancel();
     _scanSubscription = null;
 
     FlutterBluePlus.stopScan();
-
-    // Emissão final para garantir que o StreamBuilder veja os dados
     _deviceStreamController.add(List<Map<String, String>>.from(devices));
   }
 
@@ -74,13 +70,40 @@ class BleService {
     _deviceStateSubscription = null;
   }
 
+  static Future<void> connectToDevice(String deviceId) async {
+    try {
+      // Obtem o dispositivo com base no ID fornecido
+      final device = BluetoothDevice.fromId(deviceId);
+
+      // Conecta ao dispositivo
+      await device.connect(autoConnect: false);
+
+      // Atualiza o estado da conexão
+      _deviceStateSubscription = device.connectionState.listen((state) {
+        final isConnected = state == BluetoothConnectionState.connected;
+        _odbConnectionStateController.add(isConnected);
+
+        if (!isConnected) {
+          _cancelDeviceStateSubscription();
+          AppSettings.connectedDevice = null;
+        } else {
+          AppSettings.connectedDevice = device;
+          AppSettings.odbIsConnected = true;
+          print("Conectado ao dispositivo ODB-II: ${device.name}");
+        }
+      });
+    } catch (e) {
+      _odbConnectionStateController.add(false);
+      rethrow;
+    }
+  }
+
   static void dispose() {
     _bluetoothStateSubscription?.cancel();
     stopScanning();
     _cancelDeviceStateSubscription();
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
-    _deviceStreamController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
