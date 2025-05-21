@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 void main()  async  {
-
+  BleService.initialize(); // <- ESSENCIAL para o stream funcionar
   WidgetsFlutterBinding.ensureInitialized();
   runApp(App());
 }

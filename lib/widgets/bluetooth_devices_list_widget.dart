@@ -38,6 +38,8 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
 
     await BleService.startScanning();
 
+    print("Dispositivos encontrados: ${BleService.devices.length}"); // LOG
+
     setState(() {
       _isLoading = false;
     });
