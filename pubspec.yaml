@@ -31,6 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_blue_plus: ^1.35.5
+  permission_handler: ^11.3.0
+
 
   # Importação de datatime
   intl: ^0.18.1

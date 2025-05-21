@@ -4,17 +4,13 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class BleService {
   static final _bluetoothStateController = StreamController<bool>.broadcast();
-  static final _odbConnectionStateController =
-      StreamController<bool>.broadcast();
+  static final _odbConnectionStateController = StreamController<bool>.broadcast();
 
-  static Stream<bool> get bluetoothStateStream =>
-      _bluetoothStateController.stream;
-
-  static Stream<bool> get odbConnectionStateStream =>
-      _odbConnectionStateController.stream;
+  static Stream<bool> get bluetoothStateStream => _bluetoothStateController.stream;
+  static Stream<bool> get odbConnectionStateStream => _odbConnectionStateController.stream;
 
   static StreamSubscription<BluetoothAdapterState>? _bluetoothStateSubscription;
-  static StreamSubscription<List<ScanResult>>?  _scanSubscription;
+  static StreamSubscription<List<ScanResult>>? _scanSubscription;
   static StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
 
   static final List<Map<String, String>> devices = [];
@@ -24,14 +20,11 @@ class BleService {
 
   static Stream<List<Map<String, String>>> get deviceStream => _deviceStreamController.stream;
 
-
   static void initialize() {
-    // Escuta o estado do adaptador Bluetooth
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       bool isEnabled = state == BluetoothAdapterState.on;
       _bluetoothStateController.add(isEnabled);
 
-      // Se Bluetooth desligar, desconecta OBD
       if (!isEnabled) {
         _odbConnectionStateController.add(false);
         _cancelDeviceStateSubscription();
@@ -42,8 +35,6 @@ class BleService {
 
   static Future<void> startScanning() async {
     devices.clear();
-
-    // Emite evento inicial vazio para atualizar UI e sair do waiting
     _deviceStreamController.add([]);
 
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 8));
@@ -55,22 +46,23 @@ class BleService {
             'id': r.device.remoteId.toString(),
             'name': r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
+
           _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
       }
     });
 
-    await Future.delayed(const Duration(seconds: 5));
+    // Aguarda um tempo extra para garantir que dispositivos foram escaneados
+    await Future.delayed(const Duration(seconds: 6));
 
     await _scanSubscription?.cancel();
     _scanSubscription = null;
 
     FlutterBluePlus.stopScan();
 
-    // Emitir o estado final (pode ser vazio, para garantir que UI atualize)
+    // Emissão final para garantir que o StreamBuilder veja os dados
     _deviceStreamController.add(List<Map<String, String>>.from(devices));
   }
-
 
   static void stopScanning() {
     _scanSubscription?.cancel();
@@ -88,6 +80,7 @@ class BleService {
     _cancelDeviceStateSubscription();
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
+    _deviceStreamController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
