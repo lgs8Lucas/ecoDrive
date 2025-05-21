@@ -1,5 +1,3 @@
-// lib/widgets/bluetooth_devices_list_widget.dart
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/services/ble_service.dart';
@@ -38,11 +36,17 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
 
     await BleService.startScanning();
 
-    print("Dispositivos encontrados: ${BleService.devices.length}"); // LOG
+    print("Dispositivos encontrados (widget): ${BleService.devices.length}");
 
     setState(() {
       _isLoading = false;
     });
+  }
+
+  void _selecionarDispositivo(Map<String, String> dispositivo) {
+    print("Selecionado: ${dispositivo['name']} - ${dispositivo['id']}");
+    // Aqui você pode chamar o BleService.connect(dispositivo['id']) ou salvar o selecionado
+    Navigator.of(context).pop(dispositivo);
   }
 
   @override
@@ -68,7 +72,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                   children: [
                     const SizedBox(height: 20),
                     const Text(
-                      'Escolha o seu ODB-II',
+                      'Escolha o seu OBD-II',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -103,7 +107,10 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                           if (!snapshot.hasData || snapshot.data!.isEmpty) {
                             return const Center(child: Text("Nenhum dispositivo encontrado"));
                           }
+
                           final devices = snapshot.data!;
+                          print("Snapshot atual: ${devices.length} dispositivos");
+
                           return ListView.separated(
                             itemCount: devices.length,
                             separatorBuilder: (_, __) => const Divider(height: 0),
@@ -117,6 +124,7 @@ class _BluetoothDevicesListWidgetState extends State<BluetoothDevicesListWidget>
                               return ListTile(
                                 title: Text(deviceName),
                                 subtitle: Text(deviceId),
+                                onTap: () => _selecionarDispositivo(device),
                               );
                             },
                           );
