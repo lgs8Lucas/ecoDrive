@@ -1,9 +1,9 @@
 import 'dart:async';
-
+import 'package:ecoDrive/services/inclination_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../shared/app_colors.dart';
-import '../services/ble_service.dart'; // ajuste o caminho conforme necessário
+import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class EcoDrivePage extends StatefulWidget {
@@ -15,25 +15,23 @@ class EcoDrivePage extends StatefulWidget {
 
 class _EcoDrivePageState extends State<EcoDrivePage> {
   int _currentRpm = 0;
+  double _currentInclination = 0.0;
   StreamSubscription<int>? _rpmSubscription;
+  StreamSubscription<double>? _inclinationSubscription;
   Timer? _timer;
   BluetoothDevice? _device;
+  final InclinationService _inclinationService = InclinationService();
 
   @override
   void initState() {
     super.initState();
     _initRpmListener();
+    _initInclinationListener();
   }
 
   Future<void> _initRpmListener() async {
     List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
-    // if (devices.isEmpty) {
-    //   // Voltar para a HomePage caso não tenha dispositivo conectado
-    //   if (mounted) {
-    //     Navigator.of(context).popUntil((route) => route.isFirst);
-    //   }
-    //   return;
-    // }
+
     _device = devices.first;
 
     // Escuta o stream de RPM do BleService
@@ -49,11 +47,24 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  Future<void> _initInclinationListener() async {
+    _inclinationService.startListening();
+    _inclinationSubscription = _inclinationService.inclinationStream.listen((
+      angle,
+    ) {
+      setState(() {
+        _currentInclination = angle;
+      });
+    });
+  }
+
   @override
   void dispose() {
     _rpmSubscription?.cancel();
+    _inclinationSubscription?.cancel();
     _timer?.cancel();
     BleService.dispose();
+    _inclinationService.dispose();
     super.dispose();
   }
 
@@ -81,10 +92,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             children: [
               const Text(
                 'RPM do Motor',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               SfRadialGauge(
@@ -109,7 +117,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                           sizeUnit: GaugeSizeUnit.factor,
                           knobRadius: 0.06,
                         ),
-                      )
+                      ),
                     ],
                     annotations: <GaugeAnnotation>[
                       GaugeAnnotation(
@@ -126,6 +134,28 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                     ],
                   ),
                 ],
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Inclinação do Veículo',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${_currentInclination.toStringAsFixed(2)}°',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _currentInclination > 15
+                    ? 'Subida 🚗⬆️'
+                    : _currentInclination < -15
+                    ? 'Descida 🚗⬇️'
+                    : 'Plano 🚗➖',
+                style: const TextStyle(fontSize: 24),
               ),
             ],
           ),
