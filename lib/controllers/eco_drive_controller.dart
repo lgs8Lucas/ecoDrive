@@ -50,4 +50,14 @@ class EcoDriveController {
     return litrosConsumidos * fator;
   }
 
+  // Calcula o consumo médio de combustível com base na quilometragem rodada e no consumo em litros
+  Future<double> calcularConsumoMedio(double quilometragemRodada, double consumoCombustivel) async {
+    if (consumoCombustivel == 0){
+      return 0.0;
+    }
+    else {
+      return quilometragemRodada / consumoCombustivel;
+    }
+  }
+
 }

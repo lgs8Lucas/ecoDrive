@@ -44,6 +44,10 @@ class ViagemPage extends StatelessWidget {
 
           final viagem = snapshot.data!;
 
+          Future<double> calcularConsumoMedio() async {
+            return await controller.calcularConsumoMedio(viagem.quilometragemRodada, viagem.consumoCombustivel);
+          }
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
@@ -51,28 +55,32 @@ class ViagemPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black12,
+                //     blurRadius: 6,
+                //     offset: Offset(0, 3),
+                //   ),
+                // ],
               ),
               child: Row(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 10),
-                        LinhaFormatacao("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-                        LinhaFormatacao("⛽ Tipo de combustível", viagem.tipoCombustivel),
-                        LinhaFormatacao("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
-                        LinhaFormatacao("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                        LinhaFormatacao("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
-                        LinhaFormatacao("⭐ Avaliação", viagem.avaliacaoViagem),
-                        SizedBox(height: 12),
-                      ],
+                    Expanded(
+                      child: ListView(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.all(16),
+                        children: [
+                          SizedBox(height: 10),
+                          LinhaFormatacao("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                          LinhaFormatacao("⛽ Tipo de combustível", viagem.tipoCombustivel),
+                          LinhaFormatacao("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                          LinhaFormatacao("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                          LinhaFormatacao("⛽ Consumo médio", "${calcularConsumoMedio()} L"),
+                          LinhaFormatacao("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
+                          LinhaFormatacao("⭐ Avaliação", viagem.avaliacaoViagem),
+                          SizedBox(height: 12),
+                        ],
+                      ),
                     ),
                     Align(
                       alignment: Alignment.topLeft,
@@ -111,7 +119,7 @@ Widget LinhaFormatacao(String titulo, String valor) {
       children: [
         Text(
           "$titulo:",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         SizedBox(height: 15),
         Text(
@@ -119,10 +127,10 @@ Widget LinhaFormatacao(String titulo, String valor) {
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w500,
-              backgroundColor: Colors.grey[100],
+              //backgroundColor: Colors.grey[100],
           ),
         ),
-        Divider(color: Colors.black87),
+        Divider(),
       ],
     ),
   );
