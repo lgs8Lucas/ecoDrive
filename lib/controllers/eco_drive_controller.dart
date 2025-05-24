@@ -30,7 +30,7 @@ class EcoDriveController {
   }
 
   // Calcula o fator de emissão de CO2 com base no tipo de combustível
-  Future<double> determinarFatorCO2(String combustivel) async {
+  Future<double> determinarFatorCarbono(String combustivel) async {
     if (combustivel == 'Gasolina') {
       return 2.31;
     } else if (combustivel == 'Etanol') {
@@ -45,8 +45,8 @@ class EcoDriveController {
   }
 
   // Calcula a emissão de CO2 com base no tipo de combustível e no número de litros consumidos
-  Future<double> calcularEmissaoCO2(String combustivel, double litrosConsumidos) async {
-    double fator = await determinarFatorCO2(combustivel);
+  Future<double> calcularEmissaoCarbono(String combustivel, double litrosConsumidos) async {
+    double fator = await determinarFatorCarbono(combustivel);
     return litrosConsumidos * fator;
   }
 

@@ -19,18 +19,12 @@ class ViagemPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Detalhes da Viagem')),
+      appBar: AppBar(title: Text('Relatório da Viagem')),
       body: FutureBuilder<EcoDriveModel?>(
         future: controller.buscarViagemPorId(id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('Viagem não encontrada'));
           }
 
           final viagem = snapshot.data!;
@@ -50,33 +44,29 @@ class ViagemPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 28),
-                      onPressed: () => _deletarViagem(context, viagem),
+              child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10),
+                        LinhaFormatacao("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                        LinhaFormatacao("⛽ Tipo de combustível", viagem.tipoCombustivel),
+                        LinhaFormatacao("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                        LinhaFormatacao("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                        LinhaFormatacao("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO₂"),
+                        LinhaFormatacao("⭐ Avaliação", viagem.avaliacaoViagem),
+                        SizedBox(height: 12),
+                      ],
                     ),
-                  ),
-                  Text(
-                    "Relatório da Viagem",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red, size: 28),
+                        onPressed: () => _deletarViagem(context, viagem),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  buildLinha("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-                  buildLinha("⛽ Tipo de combustível", viagem.tipoCombustivel),
-                  buildLinha("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
-                  buildLinha("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                  buildLinha("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO₂"),
-                  buildLinha("⭐ Avaliação", viagem.avaliacaoViagem),
-                  SizedBox(height: 12),
-                ],
+                  ]
               ),
             ),
           );
@@ -86,7 +76,7 @@ class ViagemPage extends StatelessWidget {
   }
 }
 
-Widget buildLinha(String titulo, String valor) {
+Widget LinhaFormatacao(String titulo, String valor) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8),
     child: Column(
@@ -99,8 +89,13 @@ Widget buildLinha(String titulo, String valor) {
         SizedBox(height: 4),
         Text(
           valor,
-          style: TextStyle(fontSize: 20),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              backgroundColor: Colors.grey[60],
+          ),
         ),
+        Divider(),
       ],
     ),
   );
