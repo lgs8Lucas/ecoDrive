@@ -26,7 +26,7 @@ Future<String?> iniciarViagem({
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: seletorCombustivel,
-                      items: <String>['Gasolina', 'Etanol', 'Diesel']
+                      items: <String>['Gasolina', 'Etanol', 'Diesel', "Flex"]
                           .map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,

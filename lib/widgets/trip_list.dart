@@ -26,7 +26,7 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
         onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ViagemPage()));
         },
-        subtitle: Text("Avalição: ${viagem.avalicaoViagem}", style: AppStyles.simpleText),
+        subtitle: Text("Avalição: ${viagem.avaliacaoViagem}", style: AppStyles.simpleText),
         title: Text(
           "Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem),
           style: AppStyles.simpleText),

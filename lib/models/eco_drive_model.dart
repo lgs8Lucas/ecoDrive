@@ -1,12 +1,20 @@
-class EcoDriveModel{
-  int? id = 0;
-  String avalicaoViagem;
-  DateTime dataViagem;
+  class EcoDriveModel{
+    int? id = 0;
+    DateTime dataViagem;
+    String tipoCombustivel;
+    double quilometragemRodada;
+    double consumoCombustivel;
+    double emissaoCarbono;
+    String avaliacaoViagem;
 
   // Construtor com parâmetros obrigatórios
   EcoDriveModel({
     this.id,
-    required this.avalicaoViagem,
+    required this.tipoCombustivel,
+    required this.quilometragemRodada,
+    required this.consumoCombustivel,
+    required this.emissaoCarbono,
+    required this.avaliacaoViagem,
     DateTime? dataViagem,
   }) : dataViagem = dataViagem ?? DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual
 
@@ -14,7 +22,11 @@ class EcoDriveModel{
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'avalicaoViagem': avalicaoViagem,
+      'tipoCombustivel': tipoCombustivel,
+      'quilometragemRodada': quilometragemRodada,
+      'consumoCombustivel': consumoCombustivel,
+      'emissaoCarbono': emissaoCarbono,
+      'avalicaoViagem': avaliacaoViagem,
       'dataViagem': dataViagem.toIso8601String(), //Formato compativel como banco de dados
      };
   }
@@ -23,7 +35,11 @@ class EcoDriveModel{
   factory EcoDriveModel.fromMap(Map<String, dynamic> map) {
     return EcoDriveModel(
       id: map['id'] ?? 0,
-      avalicaoViagem: map['avalicaoViagem'] ?? '',
+      tipoCombustivel: map['tipoCombustivel'] ?? '',
+      quilometragemRodada: map['quilometragemRodada']?.toDouble() ?? 0.0,
+      consumoCombustivel: map['consumoCombustivel']?.toDouble() ?? 0.0,
+      emissaoCarbono: map['emissaoCarbono']?.toDouble() ?? 0.0,
+      avaliacaoViagem: map['avaliacaoViagem'] ?? '',
       dataViagem: DateTime.tryParse(map['dataViagem'] ?? '') ?? DateTime.now(),
     );
   }

@@ -5,6 +5,13 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../shared/app_colors.dart';
 import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:ecoDrive/widgets/start_viagem.dart';
+import 'package:ecoDrive/controllers/eco_drive_controller.dart';
+
+final EcoDriveController controller = EcoDriveController();
+
+
+
 
 class EcoDrivePage extends StatefulWidget {
   const EcoDrivePage({super.key});

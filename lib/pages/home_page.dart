@@ -1,7 +1,7 @@
 import 'package:ecoDrive/pages/eco_drive_page.dart';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:ecoDrive/widgets/trip_list.dart';
-import 'package:ecoDrive/widgets/iniciar_viagem.dart';
+import 'package:ecoDrive/widgets/start_viagem.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';

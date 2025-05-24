@@ -27,12 +27,14 @@ class EcoDriveController {
   // Calcula o fator de emissão de CO2 com base no tipo de combustível
   Future<double> determinarFatorCO2(String combustivel) async {
     if (combustivel == 'Gasolina') {
-      return 2.3;
+      return 2.31;
     } else if (combustivel == 'Etanol') {
-      return 1.5;
+      return 1.37;
     } else if (combustivel == 'Diesel') {
-      return 2.7;
-    } else {
+      return 2.68;
+    } else if (combustivel == 'Flex'){
+      return 1.84;
+    }else{
       return 0.0;
     }
   }
