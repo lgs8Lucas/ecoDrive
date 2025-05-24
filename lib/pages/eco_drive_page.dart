@@ -172,11 +172,12 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          double emissaoCarbono = await controller.calcularEmissaoCO2(widget.combustivel, 10.2);
           final viagem = EcoDriveModel(
             tipoCombustivel: widget.combustivel,
             quilometragemRodada: 10,
-            consumoCombustivel: 1,
-            emissaoCarbono: 2,
+            consumoCombustivel: 1.2,
+            emissaoCarbono: emissaoCarbono,
             avaliacaoViagem: "Excelente",
             dataViagem: DateTime.now(),
           );

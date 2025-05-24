@@ -53,6 +53,13 @@ class ViagemPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red, size: 28),
+                      onPressed: () => _deletarViagem(context, viagem),
+                    ),
+                  ),
                   Text(
                     "Relatório da Viagem",
                     style: TextStyle(
@@ -69,13 +76,6 @@ class ViagemPage extends StatelessWidget {
                   buildLinha("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO₂"),
                   buildLinha("⭐ Avaliação", viagem.avaliacaoViagem),
                   SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 28),
-                      onPressed: () => _deletarViagem(context, viagem),
-                    ),
-                  ),
                 ],
               ),
             ),
