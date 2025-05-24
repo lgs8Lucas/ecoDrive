@@ -37,21 +37,46 @@ class ViagemPage extends StatelessWidget {
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child: ListTile(
-              title: Text("Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Combustível: ${viagem.tipoCombustivel}'),
-                  Text('Quilometragem rodada: ${viagem.quilometragemRodada.toStringAsFixed(2)} km'),
-                  Text('Consumo de combustível: ${viagem.consumoCombustivel.toStringAsFixed(2)} L'),
-                  Text('Emissão de carbono: ${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2'),
-                  Text('Avaliação: ${viagem.avaliacaoViagem}'),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
                 ],
               ),
-              trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deletarViagem(context, viagem),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Relatório da Viagem",
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  buildLinha("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                  buildLinha("⛽ Tipo de combustível", viagem.tipoCombustivel),
+                  buildLinha("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                  buildLinha("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                  buildLinha("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO₂"),
+                  buildLinha("⭐ Avaliação", viagem.avaliacaoViagem),
+                  SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red, size: 28),
+                      onPressed: () => _deletarViagem(context, viagem),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -59,6 +84,26 @@ class ViagemPage extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget buildLinha(String titulo, String valor) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "$titulo:",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
+        SizedBox(height: 4),
+        Text(
+          valor,
+          style: TextStyle(fontSize: 20),
+        ),
+      ],
+    ),
+  );
 }
 
 
