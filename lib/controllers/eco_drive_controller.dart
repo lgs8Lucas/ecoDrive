@@ -14,6 +14,11 @@ class EcoDriveController {
     return await _repository.getEcoDrive();
   }
 
+  // Retorna uma viagem pelo ID
+  Future<EcoDriveModel?> buscarViagemPorId(int id) async {
+    return await _repository.getEcoDriveById(id);
+  }
+
   // Atualiza uma viagem existente
   Future<void> atualizarViagem(EcoDriveModel viagem) async {
     await _repository.update(viagem);

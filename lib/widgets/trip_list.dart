@@ -24,29 +24,36 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
       ),
       child: ListTile(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ViagemPage()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ViagemPage(id: viagem.id!), // Aqui está correto
+            ),
+          );
         },
-        subtitle: Text("Avalição: ${viagem.avaliacaoViagem}", style: AppStyles.simpleText),
+        subtitle: Text("Avaliação: ${viagem.avaliacaoViagem}", style: AppStyles.simpleText),
         title: Text(
           "Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem),
-          style: AppStyles.simpleText),
+          style: AppStyles.simpleText,
+        ),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
-            onPressed: () {
-              confirmDialog(
-                context: context,
-                menssage: "Deseja realmente excluir esta viagem?",
-                function: () async {
-                  await repository.delete(viagem);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-              );
-            },
+          onPressed: () {
+            confirmDialog(
+              context: context,
+              menssage: "Deseja realmente excluir esta viagem?",
+              function: () async {
+                await repository.delete(viagem);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomePage()),
+                );
+              },
+            );
+          },
         ),
       ),
     );
   }).toList();
 }
+

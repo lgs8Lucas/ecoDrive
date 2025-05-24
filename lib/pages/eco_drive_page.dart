@@ -8,6 +8,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/widgets/start_viagem.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
+import 'package:ecoDrive/pages/home_page.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
@@ -183,6 +184,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           print("Viagem salva com sucesso!");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Viagem salva com sucesso!')),
+          );
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
           );
         },
         backgroundColor: AppColors.colorMain,

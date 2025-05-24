@@ -50,6 +50,28 @@ class EcoDriveRepository {
     }
   }
 
+  // Metodo para retornar um registro pelo ID
+  Future<EcoDriveModel?> getEcoDriveById(int id) async {
+    try {
+      final Database db = await _getDatabase();
+      final List<Map<String, dynamic>> maps = await db.query(
+        tableName,
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+
+      if (maps.isNotEmpty) {
+        return EcoDriveModel.fromMap(maps.first);
+      } else {
+        return null; // Nenhum registro encontrado com o ID fornecido
+      }
+    } catch (ex) {
+      print('Erro ao buscar por ID: $ex');
+      return null;
+    }
+  }
+
   // Metodo para atualizar um registro no banco de dados
   Future update(EcoDriveModel model) async {
     try {
