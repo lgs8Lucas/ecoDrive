@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
 import 'package:intl/intl.dart';
+import 'package:ecoDrive/pages/home_page.dart';
+import 'package:ecoDrive/shared/app_colors.dart';
+import 'package:ecoDrive/shared/app_styles.dart';
+import 'package:ecoDrive/repositories/eco_drive_dao.dart';
+import 'package:ecoDrive/widgets/confirmDialog.dart';
 
+final EcoDriveController controller = EcoDriveController();
+final EcoDriveRepository repository = EcoDriveRepository();
 
 class ViagemPage extends StatelessWidget {
   final EcoDriveController controller = EcoDriveController();
@@ -19,18 +26,20 @@ class ViagemPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Detalhes da Viagem')),
+      appBar: AppBar(title: Text('Relatório',
+        style: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: AppColors.colorMain,
+          letterSpacing: 1.0,
+          ),
+        ),
+      ),
       body: FutureBuilder<EcoDriveModel?>(
         future: controller.buscarViagemPorId(id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('Viagem não encontrada'));
           }
 
           final viagem = snapshot.data!;
@@ -50,33 +59,41 @@ class ViagemPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 28),
-                      onPressed: () => _deletarViagem(context, viagem),
+              child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10),
+                        LinhaFormatacao("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                        LinhaFormatacao("⛽ Tipo de combustível", viagem.tipoCombustivel),
+                        LinhaFormatacao("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                        LinhaFormatacao("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                        LinhaFormatacao("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
+                        LinhaFormatacao("⭐ Avaliação", viagem.avaliacaoViagem),
+                        SizedBox(height: 12),
+                      ],
                     ),
-                  ),
-                  Text(
-                    "Relatório da Viagem",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          confirmDialog(
+                            context: context,
+                            menssage: "Deseja realmente excluir esta viagem?",
+                            function: () async {
+                              await repository.delete(viagem);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => HomePage()),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  buildLinha("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-                  buildLinha("⛽ Tipo de combustível", viagem.tipoCombustivel),
-                  buildLinha("📏 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
-                  buildLinha("⛽ Consumo de combustível", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                  buildLinha("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO₂"),
-                  buildLinha("⭐ Avaliação", viagem.avaliacaoViagem),
-                  SizedBox(height: 12),
-                ],
+                  ]
               ),
             ),
           );
@@ -86,7 +103,7 @@ class ViagemPage extends StatelessWidget {
   }
 }
 
-Widget buildLinha(String titulo, String valor) {
+Widget LinhaFormatacao(String titulo, String valor) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8),
     child: Column(
@@ -96,11 +113,16 @@ Widget buildLinha(String titulo, String valor) {
           "$titulo:",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         ),
-        SizedBox(height: 4),
+        SizedBox(height: 15),
         Text(
           valor,
-          style: TextStyle(fontSize: 20),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              backgroundColor: Colors.grey[100],
+          ),
         ),
+        Divider(color: Colors.black87),
       ],
     ),
   );

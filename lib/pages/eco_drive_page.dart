@@ -172,20 +172,24 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          double emissaoCarbono = await controller.calcularEmissaoCO2(widget.combustivel, 10.2);
+          double consumoCombustivelODB = 10.2;
+          double emissaoCarbono = await controller.calcularEmissaoCarbono(widget.combustivel, consumoCombustivelODB); //Emissão de carbono
+
           final viagem = EcoDriveModel(
+            dataViagem: DateTime.now(),
             tipoCombustivel: widget.combustivel,
             quilometragemRodada: 10,
             consumoCombustivel: 1.2,
             emissaoCarbono: emissaoCarbono,
             avaliacaoViagem: "Excelente",
-            dataViagem: DateTime.now(),
           );
+
           await controller.salvarViagem(viagem);
           print("Viagem salva com sucesso!");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Viagem salva com sucesso!')),
           );
+
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomePage()),
