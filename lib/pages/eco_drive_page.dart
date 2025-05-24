@@ -7,14 +7,15 @@ import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/widgets/start_viagem.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
+import 'package:ecoDrive/models/eco_drive_model.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
-
-
-
 class EcoDrivePage extends StatefulWidget {
-  const EcoDrivePage({super.key});
+  final String combustivel;  // variável que vai receber o valor
+
+  // construtor com o parâmetro required
+  const EcoDrivePage({Key? key, required this.combustivel}) : super(key: key);
 
   @override
   State<EcoDrivePage> createState() => _EcoDrivePageState();
@@ -169,7 +170,17 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
+        onPressed: () async {
+          final viagem = EcoDriveModel(
+            tipoCombustivel: widget.combustivel,
+            quilometragemRodada: 10,
+            consumoCombustivel: 1,
+            emissaoCarbono: 2,
+            avaliacaoViagem: "Excelente",
+            dataViagem: DateTime.now(),
+          );
+          await controller.salvarViagem(viagem);
+          print("Viagem salva com sucesso!");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Viagem salva com sucesso!')),
           );

@@ -5,7 +5,7 @@ Future<String?> iniciarViagem({
   required BuildContext context,
   required String menssage,
 }) async {
-  String seletorCombustivel = 'Gasolina';
+  String combustivel = 'Gasolina';
 
   return showDialog<String>(
     context: context,
@@ -25,7 +25,7 @@ Future<String?> iniciarViagem({
                     const Text("Combustível: "),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
-                      value: seletorCombustivel,
+                      value: combustivel,
                       items: <String>['Gasolina', 'Etanol', 'Diesel', "Flex"]
                           .map((String value) {
                         return DropdownMenuItem<String>(
@@ -35,7 +35,7 @@ Future<String?> iniciarViagem({
                       }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
-                          seletorCombustivel = newValue!;
+                          combustivel = newValue!;
                         });
                       },
                     ),
@@ -57,7 +57,7 @@ Future<String?> iniciarViagem({
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const EcoDrivePage()),
+                    MaterialPageRoute(builder: (context) => EcoDrivePage(combustivel: combustivel)),
                   );
                 },
                 style: ElevatedButton.styleFrom(

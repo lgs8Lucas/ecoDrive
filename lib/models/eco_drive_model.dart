@@ -26,7 +26,7 @@
       'quilometragemRodada': quilometragemRodada,
       'consumoCombustivel': consumoCombustivel,
       'emissaoCarbono': emissaoCarbono,
-      'avalicaoViagem': avaliacaoViagem,
+      'avaliacaoViagem': avaliacaoViagem,
       'dataViagem': dataViagem.toIso8601String(), //Formato compativel como banco de dados
      };
   }
