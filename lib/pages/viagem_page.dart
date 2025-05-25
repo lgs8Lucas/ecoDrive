@@ -44,9 +44,7 @@ class ViagemPage extends StatelessWidget {
 
           final viagem = snapshot.data!;
 
-          Future<double> calcularConsumoMedio() async {
-            return await controller.calcularConsumoMedio(viagem.quilometragemRodada, viagem.consumoCombustivel);
-          }
+          double consumoMedio = viagem.quilometragemRodada / viagem.consumoCombustivel;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -75,7 +73,7 @@ class ViagemPage extends StatelessWidget {
                           LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
                           LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
                           LinhaFormatada("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                          LinhaFormatada("⛽ Consumo médio", "${calcularConsumoMedio()} L"),
+                          LinhaFormatada("⛽ Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
                           LinhaFormatada("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
                           LinhaFormatada("⭐ Avaliação", viagem.avaliacaoViagem),
                           SizedBox(height: 12),
