@@ -4,7 +4,6 @@ import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
-import 'package:ecoDrive/models/eco_drive_model.dart';
 import 'package:intl/intl.dart';
 import 'package:ecoDrive/repositories/eco_drive_dao.dart';
 import 'package:ecoDrive/widgets/confirmDialog.dart';
@@ -31,7 +30,7 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
             ),
           );
         },
-        subtitle: Text("Avaliação: ${viagem.avaliacaoViagem}", style: AppStyles.simpleText),
+        subtitle: Text("Combustível: ${viagem.tipoCombustivel}", style: AppStyles.simpleText),
         title: Text(
           "Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem),
           style: AppStyles.simpleText,

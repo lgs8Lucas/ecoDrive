@@ -71,13 +71,13 @@ class ViagemPage extends StatelessWidget {
                         padding: EdgeInsets.all(16),
                         children: [
                           SizedBox(height: 10),
-                          LinhaFormatacao("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-                          LinhaFormatacao("⛽ Tipo de combustível", viagem.tipoCombustivel),
-                          LinhaFormatacao("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
-                          LinhaFormatacao("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                          LinhaFormatacao("⛽ Consumo médio", "${calcularConsumoMedio()} L"),
-                          LinhaFormatacao("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
-                          LinhaFormatacao("⭐ Avaliação", viagem.avaliacaoViagem),
+                          LinhaFormatada("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                          LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
+                          LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                          LinhaFormatada("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                          LinhaFormatada("⛽ Consumo médio", "${calcularConsumoMedio()} L"),
+                          LinhaFormatada("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
+                          LinhaFormatada("⭐ Avaliação", viagem.avaliacaoViagem),
                           SizedBox(height: 12),
                         ],
                       ),
@@ -111,7 +111,7 @@ class ViagemPage extends StatelessWidget {
   }
 }
 
-Widget LinhaFormatacao(String titulo, String valor) {
+Widget LinhaFormatada(String titulo, String valor) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8),
     child: Column(

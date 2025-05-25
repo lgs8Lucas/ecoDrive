@@ -172,7 +172,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          double consumoCombustivelODB = 10.2;
+          double consumoCombustivelODB = 10.2; //dados que serão coletados do ODBII
           double emissaoCarbono = await controller.calcularEmissaoCarbono(widget.combustivel, consumoCombustivelODB); //Emissão de carbono
 
           final viagem = EcoDriveModel(
@@ -190,10 +190,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             const SnackBar(content: Text('Viagem salva com sucesso!')),
           );
 
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-          );
+          // Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => HomePage()),
+          // );
         },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,
