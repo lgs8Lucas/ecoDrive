@@ -5,11 +5,8 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../shared/app_colors.dart';
 import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:ecoDrive/widgets/start_viagem.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
-import 'package:ecoDrive/pages/home_page.dart';
-
 final EcoDriveController controller = EcoDriveController();
 
 class EcoDrivePage extends StatefulWidget {
@@ -24,6 +21,8 @@ class EcoDrivePage extends StatefulWidget {
 
 class _EcoDrivePageState extends State<EcoDrivePage> {
   int _currentRpm = 0;
+  int _allTime = 0;
+  int _timeOnGreenRPM = 0;
   double _currentInclination = 0.0;
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
@@ -31,11 +30,15 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   BluetoothDevice? _device;
   final InclinationService _inclinationService = InclinationService();
 
+  double _currentDistance = 0.0;
+  StreamSubscription<double>? _distanceSubscription;
+
   @override
   void initState() {
     super.initState();
     _initRpmListener();
     _initInclinationListener();
+    _initDistanceListener();
   }
 
   Future<void> _initRpmListener() async {
@@ -51,8 +54,12 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
 
     // Solicita RPM a cada 1 segundo
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 0), (_) {
       BleService.requestRpm();
+      _allTime++;
+      if (_currentRpm <= 2500 || (_currentRpm <= 3000 && _currentInclination >= 15)) {
+        _timeOnGreenRPM++;
+      }
     });
   }
 
@@ -67,11 +74,20 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  void _initDistanceListener() {
+    _distanceSubscription = BleService.distanceStream.listen((distance) {
+      setState(() {
+        _currentDistance = distance;
+      });
+    });
+  }
+
   @override
   void dispose() {
     _rpmSubscription?.cancel();
     _inclinationSubscription?.cancel();
     _timer?.cancel();
+    _distanceSubscription?.cancel();
     BleService.dispose();
     _inclinationService.dispose();
     super.dispose();
@@ -159,13 +175,27 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                _currentInclination > 15
+                _currentInclination > 10
                     ? 'Subida 🚗⬆️'
-                    : _currentInclination < -15
+                    : _currentInclination < -10
                     ? 'Descida 🚗⬇️'
                     : 'Plano 🚗➖',
                 style: const TextStyle(fontSize: 24),
               ),
+              const SizedBox(height: 32),
+              const Text(
+                'Distância Percorrida',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${_currentDistance.toStringAsFixed(2)} km',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
             ],
           ),
         ),
@@ -178,7 +208,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           final viagem = EcoDriveModel(
             dataViagem: DateTime.now(),
             tipoCombustivel: widget.combustivel,
-            quilometragemRodada: 10,
+            quilometragemRodada: _currentDistance,
             consumoCombustivel: 1.2,
             emissaoCarbono: emissaoCarbono,
             avaliacaoViagem: "Excelente",

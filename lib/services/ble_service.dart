@@ -26,6 +26,13 @@ class BleService {
   static Stream<List<Map<String, String>>> get deviceStream =>
       _deviceStreamController.stream;
 
+  static final _distanceStreamController = StreamController<double>.broadcast();
+  static Stream<double> get distanceStream => _distanceStreamController.stream;
+  static double _totalDistance = 0.0; // Distância acumulada em km
+  static int _lastTimestamp = DateTime.now().millisecondsSinceEpoch;
+  static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
+
+
   static void initialize() {
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       bool isEnabled = state == BluetoothAdapterState.on;
@@ -174,10 +181,17 @@ class BleService {
 
   static void _onDataReceived(List<int> data) {
     final response = String.fromCharCodes(data);
-    // Limpar resposta e tentar extrair RPM
-    final rpm = _parseRpmResponse(response);
-    if (rpm != null) {
-      _rpmController.add(rpm);
+    // Extraia o RPM ou Velocidade com base no comando enviado
+    if (response.contains('41 0C')) {
+      final rpm = _parseRpmResponse(response);
+      if (rpm != null) {
+        _rpmController.add(rpm);
+      }
+    } else if (response.contains('41 0D')) { // PID para velocidade do veículo
+      final speed = _parseSpeedResponse(response);
+      if (speed != null) {
+        updateDistance(speed);
+      }
     }
   }
 
@@ -195,5 +209,51 @@ class BleService {
     } catch (_) {}
     return null;
   }
+
+  static void updateDistance(double currentSpeed) {
+    final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final timeElapsed = (currentTimestamp - _lastTimestamp) / 3600000.0; // Tempo em horas
+
+    // Calcula a distância percorrida no intervalo
+    final distance = _lastSpeed * timeElapsed;
+
+    // Acumula a distância total
+    _totalDistance += distance;
+
+    // Atualiza os valores para a próxima leitura
+    _lastTimestamp = currentTimestamp;
+    _lastSpeed = currentSpeed;
+
+    // Envia a distância acumulada para o Stream
+    _distanceStreamController.add(_totalDistance);
+  }
+
+  static double? _parseSpeedResponse(String response) {
+    try {
+      final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+      final bytes = clean.split(' ');
+
+      if (bytes.length >= 3 && bytes[0] == '41' && bytes[1] == '0D') {
+        final speed = int.parse(bytes[2], radix: 16); // Velocidade em km/h
+        return speed.toDouble();
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static Future<void> requestSpeed() async {
+    if (_writeCharacteristic == null) return;
+
+    final command = '010D\r'.codeUnits; // PID 0x0D para velocidade
+    await _writeCharacteristic!.write(command, withoutResponse: true);
+  }
+
+  static void resetDistance() {
+    _totalDistance = 0.0;
+    _distanceStreamController.add(_totalDistance);
+  }
+
+
+
 
 }
