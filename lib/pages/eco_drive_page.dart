@@ -65,6 +65,13 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _rpmSubscription = BleService.rpmStream.listen((rpm) {
       setState(() {
         _currentRpm = rpm;
+        if (rpm > _greenRpm) {
+          _tipMessage = "Reduza as rotações para economizar combustível!";
+          _tipType = 'bad';
+        } else {
+          _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
+          _tipType = 'good';
+        }
       });
     });
 
