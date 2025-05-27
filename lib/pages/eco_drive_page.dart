@@ -26,13 +26,16 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   int _currentRpm = 0;
   int _allTime = 0;
   int _timeOnGreenRPM = 0;
+  int _greenRpm = 2500; // RPM verde padrão
   double _fuelConsumed = 0.0;
   double _currentInclination = 0.0;
+  double _zeroInclination = 0.0; // Inclinação zero para referência
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
   Timer? _timer;
   BluetoothDevice? _device;
   final InclinationService _inclinationService = InclinationService();
+  final _inclinationThreshold = 10.0; // Limite para considerar inclinação significativa
   double _totalFuel = 0.0;
   StreamSubscription<double>? _fuelSubscription;
   String _tipMessage = "Mantenha o RPM abaixo de 2500 para uma condução eficiente.";
@@ -67,7 +70,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _timer = Timer.periodic(const Duration(seconds: 0), (_) {
       BleService.requestRpm();
       _allTime++;
-      if (_currentRpm <= 2500 || (_currentRpm <= 3000 && _currentInclination >= 15)) {
+      if (_currentRpm <= _greenRpm) {
         _timeOnGreenRPM++;
       }
     });
@@ -78,8 +81,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _inclinationSubscription = _inclinationService.inclinationStream.listen((
       angle,
     ) {
+      int greenRpm = 2500 + ((angle - _zeroInclination) * 10).toInt();
       setState(() {
         _currentInclination = angle;
+        _greenRpm = greenRpm > 2500? greenRpm : 2500; // Ajusta o RPM verde com base na inclinação
       });
     });
   }
@@ -135,8 +140,14 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           child: Column(
             children: [
               TipBox(tipMessage: _tipMessage, type: _tipType),
-              RpmAccelerometer(currentRpm: _currentRpm.toDouble(), greenEnd: 2500),
-              VehicleInclinationVertical(angle: _currentInclination, threshold: 10,),
+              RpmAccelerometer(currentRpm: _currentRpm.toDouble(), greenEnd: _greenRpm.toDouble()),
+              VehicleInclinationVertical(angle: _currentInclination - _zeroInclination, threshold: _inclinationThreshold,),
+              FilledButton(onPressed: () => {
+                setState(() {
+                  _zeroInclination = _currentInclination;
+                })
+              }, child: const Text('Definir Inclinação Zero')),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

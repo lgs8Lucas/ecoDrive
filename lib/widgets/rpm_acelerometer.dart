@@ -16,7 +16,7 @@ class RpmAccelerometer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300,
+      height: 250,
       child: SfRadialGauge(
         axes: <RadialAxis>[
           RadialAxis(
@@ -49,7 +49,7 @@ class RpmAccelerometer extends StatelessWidget {
                 value: currentRpm.clamp(0, 8000),
                 enableAnimation: true,
                 needleColor: Colors.black,
-                needleLength: 0.6,  // reduz o comprimento da agulha
+                needleLength: 0.5,  // reduz o comprimento da agulha
                 needleStartWidth: 2,
                 needleEndWidth: 4,
                 knobStyle: KnobStyle(
