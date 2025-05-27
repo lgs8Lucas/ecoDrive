@@ -29,9 +29,18 @@ class BleService {
   static final _distanceStreamController = StreamController<double>.broadcast();
   static Stream<double> get distanceStream => _distanceStreamController.stream;
   static double _totalDistance = 0.0; // Distância acumulada em km
-  static int _lastTimestamp = DateTime.now().millisecondsSinceEpoch;
+  static int _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
+  static int _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch;
+
   static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
 
+  static final _fuelLevelController = StreamController<double>.broadcast();
+  static Stream<double> get fuelLevelStream => _fuelLevelController.stream;
+  static final _fuelStreamController = StreamController<double>.broadcast();
+  static Stream<double> get fuelStream => _fuelStreamController.stream;
+
+
+  static double _totalFuelConsumed = 0.0; // Total de combustível consumido em litros
 
   static void initialize() {
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((state) {
@@ -124,6 +133,7 @@ class BleService {
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
     _rpmController.close();
+    _fuelStreamController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
@@ -192,7 +202,13 @@ class BleService {
       if (speed != null) {
         updateDistance(speed);
       }
+    }else if (response.contains('41 5E') || response.contains('41 66')) { // PID para consumo instantâneo de combustível
+      final fuelRate = _parseFuelRateResponse(response);
+      if (fuelRate != null) {
+        updateFuelConsumption(fuelRate);
+      }
     }
+
   }
 
   // Traduzir a resposta
@@ -212,7 +228,7 @@ class BleService {
 
   static void updateDistance(double currentSpeed) {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    final timeElapsed = (currentTimestamp - _lastTimestamp) / 3600000.0; // Tempo em horas
+    final timeElapsed = (currentTimestamp - _lastDistanceTimestamp) / 3600000.0; // Tempo em horas
 
     // Calcula a distância percorrida no intervalo
     final distance = _lastSpeed * timeElapsed;
@@ -221,7 +237,7 @@ class BleService {
     _totalDistance += distance;
 
     // Atualiza os valores para a próxima leitura
-    _lastTimestamp = currentTimestamp;
+    _lastDistanceTimestamp = currentTimestamp;
     _lastSpeed = currentSpeed;
 
     // Envia a distância acumulada para o Stream
@@ -253,7 +269,34 @@ class BleService {
     _distanceStreamController.add(_totalDistance);
   }
 
+  static double? _parseFuelRateResponse(String response) {
+    try {
+      final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+      final bytes = clean.split(' ');
 
+      if (bytes.length >= 4 && (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
+        final A = int.parse(bytes[2], radix: 16);
+        final B = int.parse(bytes[3], radix: 16);
+
+        // Conversão: (A * 256 + B) / 20 para gramas/segundo
+        return ((A * 256) + B) / 20.0;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static void updateFuelConsumption(double fuelRate) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // Tempo em segundos
+    _lastFuelTimestamp = now;
+
+    // Calcula combustível consumido em litros no intervalo
+    final fuelConsumedInLiters = (fuelRate * elapsedSeconds) / 1000.0; // Conversão de g/s para litros
+    _totalFuelConsumed += fuelConsumedInLiters;
+
+    // Envia o valor atualizado para o Stream
+    _fuelStreamController.add(_totalFuelConsumed);
+  }
 
 
 }

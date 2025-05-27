@@ -23,12 +23,16 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   int _currentRpm = 0;
   int _allTime = 0;
   int _timeOnGreenRPM = 0;
+  double _fuelConsumed = 0.0;
   double _currentInclination = 0.0;
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
   Timer? _timer;
   BluetoothDevice? _device;
   final InclinationService _inclinationService = InclinationService();
+  double _totalFuel = 0.0;
+  StreamSubscription<double>? _fuelSubscription;
+
 
   double _currentDistance = 0.0;
   StreamSubscription<double>? _distanceSubscription;
@@ -39,6 +43,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _initRpmListener();
     _initInclinationListener();
     _initDistanceListener();
+    _initFuelListener();
   }
 
   Future<void> _initRpmListener() async {
@@ -82,6 +87,14 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  void _initFuelListener() {
+    _fuelSubscription = BleService.fuelStream.listen((fuel) {
+      setState(() {
+        _totalFuel = fuel;
+      });
+    });
+  }
+
   @override
   void dispose() {
     _rpmSubscription?.cancel();
@@ -91,6 +104,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     BleService.dispose();
     _inclinationService.dispose();
     super.dispose();
+    _fuelSubscription?.cancel();
+
   }
 
   @override
@@ -195,21 +210,33 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
+              const SizedBox(height: 32),
+              const Text(
+                'Consumo de Combustível',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${_totalFuel.toStringAsFixed(2)} L',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          double consumoCombustivelODB = 10.2; //dados que serão coletados do ODBII
+          double consumoCombustivelODB = _totalFuel; //dados que serão coletados do ODBII
           double emissaoCarbono = await controller.calcularEmissaoCarbono(widget.combustivel, consumoCombustivelODB); //Emissão de carbono
 
           final viagem = EcoDriveModel(
             dataViagem: DateTime.now(),
             tipoCombustivel: widget.combustivel,
             quilometragemRodada: _currentDistance,
-            consumoCombustivel: 1.2,
+            consumoCombustivel: consumoCombustivelODB,
             emissaoCarbono: emissaoCarbono,
             avaliacaoViagem: "Excelente",
           );
