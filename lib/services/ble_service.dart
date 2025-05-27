@@ -134,7 +134,9 @@ class BleService {
     _odbConnectionStateController.close();
     _rpmController.close();
     _fuelStreamController.close();
+    _distanceStreamController.close();
   }
+
 
   static Future<bool> isBluetoothOn() async {
     BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
@@ -230,19 +232,15 @@ class BleService {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final timeElapsed = (currentTimestamp - _lastDistanceTimestamp) / 3600000.0; // Tempo em horas
 
-    // Calcula a distância percorrida no intervalo
-    final distance = _lastSpeed * timeElapsed;
-
-    // Acumula a distância total
+    final distance = _lastSpeed * timeElapsed; // Distância percorrida no intervalo
     _totalDistance += distance;
 
-    // Atualiza os valores para a próxima leitura
-    _lastDistanceTimestamp = currentTimestamp;
     _lastSpeed = currentSpeed;
+    _lastDistanceTimestamp = currentTimestamp;
 
-    // Envia a distância acumulada para o Stream
     _distanceStreamController.add(_totalDistance);
   }
+
 
   static double? _parseSpeedResponse(String response) {
     try {

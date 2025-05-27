@@ -10,10 +10,11 @@ import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
+
 final EcoDriveController controller = EcoDriveController();
 
 class EcoDrivePage extends StatefulWidget {
-  final String combustivel;  // variável que vai receber o valor
+  final String combustivel; // variável que vai receber o valor
 
   // construtor com o parâmetro required
   const EcoDrivePage({Key? key, required this.combustivel}) : super(key: key);
@@ -35,12 +36,13 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   Timer? _timer;
   BluetoothDevice? _device;
   final InclinationService _inclinationService = InclinationService();
-  final _inclinationThreshold = 10.0; // Limite para considerar inclinação significativa
+  final _inclinationThreshold =
+      10.0; // Limite para considerar inclinação significativa
   double _totalFuel = 0.0;
   StreamSubscription<double>? _fuelSubscription;
-  String _tipMessage = "Mantenha o RPM abaixo de 2500 para uma condução eficiente.";
-  String _tipType = 'bad'; // Tipo da dica, pode ser 'good' ou 'bad'
-
+  String _tipMessage =
+      "Você está dirigindo de forma eficiente! Continue assim!"; // Mensagem da dica
+  String _tipType = 'good'; // Tipo da dica, pode ser 'good' ou 'bad'
 
   double _currentDistance = 0.0;
   StreamSubscription<double>? _distanceSubscription;
@@ -67,8 +69,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
 
     // Solicita RPM a cada 1 segundo
-    _timer = Timer.periodic(const Duration(seconds: 0), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       BleService.requestRpm();
+      BleService.requestSpeed();
       _allTime++;
       if (_currentRpm <= _greenRpm) {
         _timeOnGreenRPM++;
@@ -84,7 +87,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       int greenRpm = 2500 + ((angle - _zeroInclination) * 10).toInt();
       setState(() {
         _currentInclination = angle;
-        _greenRpm = greenRpm > 2500? greenRpm : 2500; // Ajusta o RPM verde com base na inclinação
+        _greenRpm =
+            greenRpm > 2500
+                ? greenRpm
+                : 2500; // Ajusta o RPM verde com base na inclinação
       });
     });
   }
@@ -109,14 +115,14 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   void dispose() {
     _rpmSubscription?.cancel();
     _inclinationSubscription?.cancel();
-    _timer?.cancel();
+    _fuelSubscription?.cancel();
     _distanceSubscription?.cancel();
+    _timer?.cancel();
     BleService.dispose();
     _inclinationService.dispose();
     super.dispose();
-    _fuelSubscription?.cancel();
-
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -140,20 +146,53 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           child: Column(
             children: [
               TipBox(tipMessage: _tipMessage, type: _tipType),
-              RpmAccelerometer(currentRpm: _currentRpm.toDouble(), greenEnd: _greenRpm.toDouble()),
-              VehicleInclinationVertical(angle: _currentInclination - _zeroInclination, threshold: _inclinationThreshold,),
-              FilledButton(onPressed: () => {
-                setState(() {
-                  _zeroInclination = _currentInclination;
-                })
-              }, child: const Text('Definir Inclinação Zero')),
+              RpmAccelerometer(
+                currentRpm: _currentRpm.toDouble(),
+                greenEnd: _greenRpm.toDouble(),
+              ),
+              CircularInfoWidget(
+                icon: Icons.local_fire_department_rounded,
+                label: "Emissão de carbono",
+                value: 0,
+                unit: "Kg",
+              ),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularInfoWidget(icon: Icons.map, label: "Distância percorrida", value: _currentDistance, unit: "Km"),
+                  CircularInfoWidget(
+                    icon: Icons.map,
+                    label: "Distância percorrida",
+                    value: _currentDistance,
+                    unit: "Km",
+                  ),
                   const SizedBox(width: 16),
-                  CircularInfoWidget(icon: Icons.oil_barrel, label: "Consumo de Combustivel", value: _totalFuel, unit: "L"),
+                  CircularInfoWidget(
+                    icon: Icons.oil_barrel,
+                    label: "Consumo de Combustivel",
+                    value: _totalFuel,
+                    unit: "L",
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  VehicleInclinationVertical(
+                    angle: _currentInclination - _zeroInclination,
+                    threshold: _inclinationThreshold,
+                  ),
+                  const SizedBox(width: 20),
+                  FilledButton(
+                    onPressed:
+                        () => {
+                          setState(() {
+                            _zeroInclination = _currentInclination;
+                          }),
+                        },
+                    child: const Text('Definir Inclinação Zero'),
+                  ),
                 ],
               ),
             ],
@@ -162,8 +201,12 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          double consumoCombustivelODB = _totalFuel; //dados que serão coletados do ODBII
-          double emissaoCarbono = await controller.calcularEmissaoCarbono(widget.combustivel, consumoCombustivelODB); //Emissão de carbono
+          double consumoCombustivelODB =
+              _totalFuel; //dados que serão coletados do ODBII
+          double emissaoCarbono = await controller.calcularEmissaoCarbono(
+            widget.combustivel,
+            consumoCombustivelODB,
+          ); //Emissão de carbono
 
           final viagem = EcoDriveModel(
             dataViagem: DateTime.now(),

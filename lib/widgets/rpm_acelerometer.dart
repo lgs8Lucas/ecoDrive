@@ -7,23 +7,23 @@ class RpmAccelerometer extends StatelessWidget {
   final double greenEnd; // Fim da faixa verde
 
   const RpmAccelerometer({
-    Key? key,
+    super.key,
     required this.currentRpm,
     this.greenStart = 0,
     this.greenEnd = 3000,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 250,
+      height: 210,
       child: SfRadialGauge(
         axes: <RadialAxis>[
           RadialAxis(
             minimum: 0,
             maximum: 8000,
             interval: 1000,
-            radiusFactor: 0.7, // reduz o raio do círculo
+            radiusFactor: 0.95, // reduz o raio do círculo
             axisLineStyle: AxisLineStyle(
               thickness: 12, // espessura menor
               color: Colors.grey.shade300,
