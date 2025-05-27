@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:ecoDrive/services/inclination_service.dart';
+import 'package:ecoDrive/widgets/circular_info_widget.dart';
+import 'package:ecoDrive/widgets/rpm_acelerometer.dart';
+import 'package:ecoDrive/widgets/tip_box.dart';
+import 'package:ecoDrive/widgets/vehicle_inclination_vertical.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../shared/app_colors.dart';
 import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -32,6 +35,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   final InclinationService _inclinationService = InclinationService();
   double _totalFuel = 0.0;
   StreamSubscription<double>? _fuelSubscription;
+  String _tipMessage = "Mantenha o RPM abaixo de 2500 para uma condução eficiente.";
+  String _tipType = 'bad'; // Tipo da dica, pode ser 'good' ou 'bad'
 
 
   double _currentDistance = 0.0;
@@ -128,100 +133,17 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'RPM do Motor',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              SfRadialGauge(
-                axes: <RadialAxis>[
-                  RadialAxis(
-                    minimum: 0,
-                    maximum: 8000,
-                    interval: 1000,
-                    axisLineStyle: const AxisLineStyle(
-                      thickness: 0.2,
-                      cornerStyle: CornerStyle.bothCurve,
-                      thicknessUnit: GaugeSizeUnit.factor,
-                    ),
-                    pointers: [
-                      NeedlePointer(
-                        value: _currentRpm.toDouble().clamp(0, 8000),
-                        enableAnimation: true,
-                        needleStartWidth: 1,
-                        needleEndWidth: 4,
-                        knobStyle: const KnobStyle(
-                          color: Colors.red,
-                          sizeUnit: GaugeSizeUnit.factor,
-                          knobRadius: 0.06,
-                        ),
-                      ),
-                    ],
-                    annotations: <GaugeAnnotation>[
-                      GaugeAnnotation(
-                        widget: Text(
-                          '$_currentRpm RPM',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        angle: 90,
-                        positionFactor: 0.75,
-                      ),
-                    ],
-                  ),
+              TipBox(tipMessage: _tipMessage, type: _tipType),
+              RpmAccelerometer(currentRpm: _currentRpm.toDouble(), greenEnd: 2500),
+              VehicleInclinationVertical(angle: _currentInclination, threshold: 10,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularInfoWidget(icon: Icons.map, label: "Distância percorrida", value: _currentDistance, unit: "Km"),
+                  const SizedBox(width: 16),
+                  CircularInfoWidget(icon: Icons.oil_barrel, label: "Consumo de Combustivel", value: _totalFuel, unit: "L"),
                 ],
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Inclinação do Veículo',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${_currentInclination.toStringAsFixed(2)}°',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _currentInclination > 10
-                    ? 'Subida 🚗⬆️'
-                    : _currentInclination < -10
-                    ? 'Descida 🚗⬇️'
-                    : 'Plano 🚗➖',
-                style: const TextStyle(fontSize: 24),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Distância Percorrida',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${_currentDistance.toStringAsFixed(2)} km',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Consumo de Combustível',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${_totalFuel.toStringAsFixed(2)} L',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
             ],
           ),
