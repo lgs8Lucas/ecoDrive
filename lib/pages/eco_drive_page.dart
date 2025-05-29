@@ -11,6 +11,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
 
+import 'home_page.dart';
+
 final EcoDriveController controller = EcoDriveController();
 
 class EcoDrivePage extends StatefulWidget {
@@ -216,6 +218,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           ); //Emissão de carbono
 
           final viagem = EcoDriveModel(
+            nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
+            duracaoViagem: _allTime,
+            tempoRpmVerde: _timeOnGreenRPM,
             dataViagem: DateTime.now(),
             tipoCombustivel: widget.combustivel,
             quilometragemRodada: _currentDistance,
@@ -230,10 +235,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             const SnackBar(content: Text('Viagem salva com sucesso!')),
           );
 
-          // Navigator.pushReplacement(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => HomePage()),
-          // );
+          Navigator.pushReplacement(
+               context,
+               MaterialPageRoute(builder: (context) => HomePage()),
+          );
         },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,
