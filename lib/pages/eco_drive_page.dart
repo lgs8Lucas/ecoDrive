@@ -235,10 +235,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             const SnackBar(content: Text('Viagem salva com sucesso!')),
           );
 
-          Navigator.pushReplacement(
-               context,
-               MaterialPageRoute(builder: (context) => HomePage()),
-          );
+          Navigator.pop(context);
         },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,

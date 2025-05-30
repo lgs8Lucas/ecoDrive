@@ -1,19 +1,35 @@
-import 'package:ecoDrive/pages/eco_drive_page.dart';
-import 'package:ecoDrive/shared/app_settings.dart';
-import 'package:ecoDrive/widgets/trip_list.dart';
-import 'package:ecoDrive/widgets/start_viagem.dart';
 import 'package:flutter/material.dart';
-import 'package:ecoDrive/pages/viagem_page.dart';
-import 'package:ecoDrive/shared/app_colors.dart';
-import 'package:ecoDrive/widgets/bluetooth_status_widget.dart';
-import '../widgets/faq_dialog.dart'; // importe aqui
-import 'package:ecoDrive/controllers/eco_drive_controller.dart';
-import 'package:ecoDrive/models/eco_drive_model.dart';
+import '../shared/app_colors.dart';
+import '../widgets/bluetooth_status_widget.dart';
+import '../widgets/faq_dialog.dart';
+import '../widgets/start_viagem.dart';
+import '../widgets/trip_list.dart';
 
-final EcoDriveController controller = EcoDriveController();
-
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<List<Widget>> _historicoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistorico();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadHistorico(); // Recarrega o histórico sempre que a página for reconstruída
+  }
+
+  void _loadHistorico() {
+    setState(() {
+      _historicoFuture = listarHistorico(context);
+    });
+  }
 
   void _showFAQ(BuildContext context) {
     showDialog(
@@ -24,10 +40,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('EcoDrive',
+        title: Text(
+          'EcoDrive',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w700,
@@ -54,8 +72,9 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             SizedBox(height: 1),
-            Text("Conexão com o ODB",
-                style: TextStyle(
+            Text(
+              "Conexão com o ODB",
+              style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
                 color: AppColors.colorBlack,
@@ -65,7 +84,8 @@ class HomePage extends StatelessWidget {
             SizedBox(height: 10),
             BluetoothStatusWidget(),
             SizedBox(height: 25),
-            Text("Historico de Viagens",
+            Text(
+              "Historico de Viagens",
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
@@ -73,7 +93,7 @@ class HomePage extends StatelessWidget {
             ),
             Expanded(
               child: FutureBuilder<List<Widget>>(
-                future: listarHistorico(context),
+                future: _historicoFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -94,24 +114,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-
-
-
       floatingActionButton: FloatingActionButton.extended(
-        /*
-        onPressed: () async{
-          final novaViagem = EcoDriveModel(
-              avalicaoViagem: "Excelente",
-              dataViagem: DateTime.now(),
-          );
-          await controller.salvarViagem(novaViagem);
-          print("Viagem salva com sucesso!");
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        },
-        */
         onPressed: () async {
           final combustivel = await iniciarViagem(
             context: context,
@@ -125,5 +128,4 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
 }
