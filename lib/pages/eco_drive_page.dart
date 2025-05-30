@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:ecoDrive/services/inclination_service.dart';
 import 'package:ecoDrive/widgets/circular_info_widget.dart';
+import 'package:ecoDrive/widgets/confirmDialog.dart';
 import 'package:ecoDrive/widgets/rpm_acelerometer.dart';
 import 'package:ecoDrive/widgets/tip_box.dart';
 import 'package:ecoDrive/widgets/vehicle_inclination_vertical.dart';
@@ -210,32 +211,36 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          double consumoCombustivelODB =
-              _totalFuel; //dados que serão coletados do ODBII
-          double emissaoCarbono = await controller.calcularEmissaoCarbono(
-            widget.combustivel,
-            consumoCombustivelODB,
-          ); //Emissão de carbono
+          confirmDialog(context: context,
+              menssage: "Deseja realmente salvar esta viagem?",
+              function: () async {
+                double consumoCombustivelODB = _totalFuel; //dados que serão coletados do ODBII
+                double emissaoCarbono = await controller.calcularEmissaoCarbono(
+                  widget.combustivel,
+                  consumoCombustivelODB,
+                ); //Emissão de carbono
 
-          final viagem = EcoDriveModel(
-            nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
-            duracaoViagem: _allTime,
-            tempoRpmVerde: _timeOnGreenRPM,
-            dataViagem: DateTime.now(),
-            tipoCombustivel: widget.combustivel,
-            quilometragemRodada: _currentDistance,
-            consumoCombustivel: consumoCombustivelODB,
-            emissaoCarbono: emissaoCarbono,
-            avaliacaoViagem: "Excelente",
+                final viagem = EcoDriveModel(
+                  nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
+                  duracaoViagem: _allTime,
+                  tempoRpmVerde: _timeOnGreenRPM,
+                  dataViagem: DateTime.now(),
+                  tipoCombustivel: widget.combustivel,
+                  quilometragemRodada: _currentDistance,
+                  consumoCombustivel: consumoCombustivelODB,
+                  emissaoCarbono: emissaoCarbono,
+                  avaliacaoViagem: "Excelente",
+                );
+
+                await controller.salvarViagem(viagem);
+                print("Viagem salva com sucesso!");
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Viagem salva com sucesso!')),
+                );
+
+                Navigator.pop(context);
+              }
           );
-
-          await controller.salvarViagem(viagem);
-          print("Viagem salva com sucesso!");
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Viagem salva com sucesso!')),
-          );
-
-          Navigator.pop(context);
         },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,

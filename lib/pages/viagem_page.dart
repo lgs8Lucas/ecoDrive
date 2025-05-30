@@ -12,8 +12,6 @@ final EcoDriveController controller = EcoDriveController();
 final EcoDriveRepository repository = EcoDriveRepository();
 
 class ViagemPage extends StatelessWidget {
-  final EcoDriveController controller = EcoDriveController();
-
   final int id;
   ViagemPage({super.key, required this.id});
 
