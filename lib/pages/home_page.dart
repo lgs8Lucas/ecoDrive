@@ -1,3 +1,4 @@
+import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:flutter/material.dart';
 import '../shared/app_colors.dart';
 import '../widgets/bluetooth_status_widget.dart';
@@ -27,9 +28,12 @@ class _HomePageState extends State<HomePage> {
 
   void _loadHistorico() {
     setState(() {
-      _historicoFuture = listarHistorico(context);
+      _historicoFuture = listarHistorico(context, () {
+        _loadHistorico(); // callback para atualizar a lista após voltar da ViagemPage ou deletar
+      });
     });
   }
+
 
   void _showFAQ(BuildContext context) {
     showDialog(
