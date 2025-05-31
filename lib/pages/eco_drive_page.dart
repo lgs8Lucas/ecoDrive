@@ -20,9 +20,12 @@ class EcoDrivePage extends StatefulWidget {
   final String combustivel; // variável que vai receber o valor
   final VoidCallback onReturn; // Callback para atualizar ao sair
 
-
   // construtor com o parâmetro required
-  const EcoDrivePage({Key? key, required this.combustivel, required this.onReturn}) : super(key: key);
+  const EcoDrivePage({
+    Key? key,
+    required this.combustivel,
+    required this.onReturn,
+  }) : super(key: key);
 
   @override
   State<EcoDrivePage> createState() => _EcoDrivePageState();
@@ -33,7 +36,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   BluetoothDevice? _device;
 
   final InclinationService _inclinationService = InclinationService();
-  final _inclinationThreshold = 10.0; // Limite para considerar inclinação significativa
+  final _inclinationThreshold =
+      10.0; // Limite para considerar inclinação significativa
 
   String _tipTile = "Bem-vindo!";
   String _tipMessage = "Comece a dirigir para ver dicas.";
@@ -57,12 +61,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
 
   @override
   void initState() {
-
     super.initState();
     _initRpmListener();
     _initInclinationListener();
-
-
   }
 
   void _reset() {
@@ -103,7 +104,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           _tipType = 'bad';
         } else {
           _tipTile = "Ótima direção!";
-          _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
+          _tipMessage =
+              "Você está dirigindo de forma eficiente! Continue assim!";
           _tipType = 'good';
         }
       });
@@ -165,7 +167,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,19 +212,16 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
               ),
               const SizedBox(height: 2),
               FutureBuilder<double>(
-                future: controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel),
+                future: controller.calcularEmissaoCarbono(
+                  widget.combustivel,
+                  _totalFuel,
+                ),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Erro: ${snapshot.error}');
-                  } else {
-                    return EmissaoCarbonoCard(
-                      valor: snapshot.data!.toStringAsFixed(2),
-                      unidade: "kgCO2",
-                      status: "good", //
-                    );
-                  }
+                  return EmissaoCarbonoCard(
+                    valor: snapshot.data!.toStringAsFixed(2),
+                    unidade: "kgCO2",
+                    status: "good", //
+                  );
                 },
               ),
               const SizedBox(height: 15),
@@ -277,9 +275,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             ElevatedButton.icon(
               onPressed: () {
                 confirmDialog(
-                    context: context,
-                    menssage: "Deseja realmente resetar a viagem?",
-                    function: _reset);
+                  context: context,
+                  menssage: "Deseja realmente resetar a viagem?",
+                  function: _reset,
+                );
               },
               icon: Icon(Icons.restart_alt),
               label: Text('Resetar'),
@@ -291,37 +290,41 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             ElevatedButton.icon(
               onPressed: () async {
                 confirmDialog(
-                    context: context,
-                    menssage: "Deseja realmente salvar esta viagem?",
-                    function: () async {
-                      double consumoCombustivelODB = _totalFuel;
-                      double emissaoCarbono = await controller.calcularEmissaoCarbono(
-                        widget.combustivel,
-                        consumoCombustivelODB,
-                      );
+                  context: context,
+                  menssage: "Deseja realmente salvar esta viagem?",
+                  function: () async {
+                    double consumoCombustivelODB = _totalFuel;
+                    double emissaoCarbono = await controller
+                        .calcularEmissaoCarbono(
+                          widget.combustivel,
+                          consumoCombustivelODB,
+                        );
 
-                      final viagem = EcoDriveModel(
-                        nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
-                        duracaoViagem: _allTime,
-                        tempoRpmVerde: _timeOnGreenRPM,
-                        dataViagem: DateTime.now(),
-                        tipoCombustivel: widget.combustivel,
-                        quilometragemRodada: _currentDistance,
-                        consumoCombustivel: consumoCombustivelODB,
-                        emissaoCarbono: emissaoCarbono,
-                        avaliacaoViagem: "Excelente",
-                      );
+                    final viagem = EcoDriveModel(
+                      nomeViagem: "Viagem Padrão",
+                      duracaoViagem: _allTime,
+                      tempoRpmVerde: _timeOnGreenRPM,
+                      dataViagem: DateTime.now(),
+                      tipoCombustivel: widget.combustivel,
+                      quilometragemRodada: _currentDistance,
+                      consumoCombustivel: consumoCombustivelODB,
+                      emissaoCarbono: emissaoCarbono,
+                      avaliacaoViagem: "Excelente",
+                    );
 
-                      await controller.salvarViagem(viagem);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Viagem salva com sucesso!')),
-                      );
+                    await controller.salvarViagem(viagem);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Viagem salva com sucesso!'),
+                      ),
+                    );
 
-                      _reset();
+                    _reset();
 
-                      widget.onReturn();
-                      Navigator.pop(context);
-                    });
+                    widget.onReturn();
+                    Navigator.pop(context);
+                  },
+                );
               },
               icon: Icon(Icons.save),
               label: Text('Finalizar Viagem'),
