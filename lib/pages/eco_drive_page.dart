@@ -44,6 +44,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   double _zeroInclination = 0.0; // Inclinação zero para referência
 
   double _totalFuel = 0.0;
+  late Future<double> _emissaoCarbonoFuture;
   double _currentDistance = 0.0;
   int _currentRpm = 0;
   double _fuelConsumed = 0.0;
@@ -53,7 +54,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   StreamSubscription<double>? _fuelSubscription;
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
-  late Future<double> _emissaoFuture;
 
   @override
   void initState() {
@@ -62,7 +62,17 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _initRpmListener();
     _initInclinationListener();
 
+    _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
 
+    // Supondo que você já esteja escutando fuelStream:
+    _fuelSubscription = BleService.fuelStream.listen((fuel) {
+      print('Combustível recebido: $fuel');
+
+      setState(() {
+        _totalFuel = fuel;
+        _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
+      });
+    });
   }
 
   void _reset() {
@@ -211,7 +221,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
               ),
               const SizedBox(height: 2),
               FutureBuilder<double>(
-                future: controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel),
+                future: _emissaoCarbonoFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return CircularProgressIndicator();
