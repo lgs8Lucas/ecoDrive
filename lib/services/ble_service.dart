@@ -18,32 +18,30 @@ class BleService {
   static StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
 
   static final List<Map<String, String>> devices = [];
-
   static final StreamController<List<Map<String, String>>>
   _deviceStreamController =
       StreamController<List<Map<String, String>>>.broadcast();
-
   static Stream<List<Map<String, String>>> get deviceStream =>
       _deviceStreamController.stream;
 
   static final _distanceStreamController = StreamController<double>.broadcast();
-
   static Stream<double> get distanceStream => _distanceStreamController.stream;
-  static double _totalDistance = 0.0; // Distância acumulada em km
   static int _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
+
   static int _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch;
-
-  static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
-
   static final _fuelLevelController = StreamController<double>.broadcast();
-
   static Stream<double> get fuelLevelStream => _fuelLevelController.stream;
   static final _fuelStreamController = StreamController<double>.broadcast();
-
   static Stream<double> get fuelStream => _fuelStreamController.stream;
 
-  static double _totalFuelConsumed =
-      0.0; // Total de combustível consumido em litros
+  static final StreamController<double> _speedStreamController = StreamController.broadcast();
+  static Stream<double> get speedStream => _speedStreamController.stream;
+
+  static double _totalDistance = 0.0; // Distância acumulada em km
+  static double _totalFuelConsumed = 0.0; // Total de combustível consumido em litros
+  static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
+  static DateTime? _lastSpeedUpdate;
+
 
   static void initialize() {
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((state) {
@@ -138,6 +136,7 @@ class BleService {
     _rpmController.close();
     _fuelStreamController.close();
     _distanceStreamController.close();
+    _fuelLevelController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
@@ -195,6 +194,8 @@ class BleService {
 
   static void _onDataReceived(List<int> data) {
     final response = String.fromCharCodes(data);
+    print('Resposta OBD: $response');
+
     // Extraia o RPM ou Velocidade com base no comando enviado
     if (response.contains('41 0C')) {
       final rpm = _parseRpmResponse(response);
@@ -273,6 +274,12 @@ class BleService {
     _distanceStreamController.add(_totalDistance);
   }
 
+  static Future<void> requestFuelRate() async {
+    if (_writeCharacteristic == null) return;
+    final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
+    await _writeCharacteristic!.write(command, withoutResponse: true);
+  }
+
   static double? _parseFuelRateResponse(String response) {
     try {
       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
@@ -292,16 +299,42 @@ class BleService {
 
   static void updateFuelConsumption(double fuelRate) {
     final now = DateTime.now().millisecondsSinceEpoch;
-    final elapsedSeconds =
-        (now - _lastFuelTimestamp) / 1000; // Tempo em segundos
+    final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // segundos
     _lastFuelTimestamp = now;
 
-    // Calcula combustível consumido em litros no intervalo
-    final fuelConsumedInLiters =
-        (fuelRate * elapsedSeconds) / 1000.0; // Conversão de g/s para litros
+    // Converte g/s * tempo = g → depois para litros (assumindo densidade média de 0.75 kg/L)
+    final fuelConsumedInLiters = ((fuelRate * elapsedSeconds) / 1000.0) / 0.75;
+
     _totalFuelConsumed += fuelConsumedInLiters;
 
-    // Envia o valor atualizado para o Stream
     _fuelStreamController.add(_totalFuelConsumed);
+  }
+
+  static void updateSpeed(double speed) {
+    final now = DateTime.now();
+
+    if (_lastSpeedUpdate != null) {
+      final deltaTime = now.difference(_lastSpeedUpdate!).inSeconds;
+      if (deltaTime > 0) {
+        // velocidade (km/h) * tempo (s) / 3600 = km
+        _totalDistance += speed * (deltaTime / 3600);
+        _distanceStreamController.add(_totalDistance);
+      }
+    }
+
+    _lastSpeedUpdate = now;
+
+    _speedStreamController.add(speed);
+  }
+
+  static void reset() {
+    _totalFuelConsumed = 0.0;
+    _totalDistance = 0.0;
+    _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch;
+    _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
+    _lastSpeed = 0.0;
+    _distanceStreamController.add(_totalDistance);
+    _fuelStreamController.add(_totalFuelConsumed);
+    _lastSpeedUpdate = null;
   }
 }

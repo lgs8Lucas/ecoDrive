@@ -18,7 +18,6 @@ final EcoDriveController controller = EcoDriveController();
 
 class EcoDrivePage extends StatefulWidget {
   final String combustivel; // variável que vai receber o valor
-
   final VoidCallback onReturn; // Callback para atualizar ao sair
 
 
@@ -30,42 +29,66 @@ class EcoDrivePage extends StatefulWidget {
 }
 
 class _EcoDrivePageState extends State<EcoDrivePage> {
-  int _currentRpm = 0;
-  int _allTime = 0;
-  int _timeOnGreenRPM = 0;
-  int _greenRpm = 2500; // RPM verde padrão
-  double _fuelConsumed = 0.0;
-  double _currentInclination = 0.0;
-  double _zeroInclination = 0.0; // Inclinação zero para referência
-  StreamSubscription<int>? _rpmSubscription;
-  StreamSubscription<double>? _inclinationSubscription;
   Timer? _timer;
   BluetoothDevice? _device;
+
   final InclinationService _inclinationService = InclinationService();
-  final _inclinationThreshold =
-      10.0; // Limite para considerar inclinação significativa
-  double _totalFuel = 0.0;
-  StreamSubscription<double>? _fuelSubscription;
+  final _inclinationThreshold = 10.0; // Limite para considerar inclinação significativa
+
   String _tipTile = "Bem-vindo!";
   String _tipMessage = "Comece a dirigir para ver dicas em tempo real.";
   String _tipType = "good";
+  int _allTime = 0;
+  int _timeOnGreenRPM = 0;
+  int _greenRpm = 2500; // RPM verde padrão
+  double _zeroInclination = 0.0; // Inclinação zero para referência
 
+  double _totalFuel = 0.0;
   double _currentDistance = 0.0;
+  int _currentRpm = 0;
+  double _fuelConsumed = 0.0;
+  double _currentInclination = 0.0;
+
   StreamSubscription<double>? _distanceSubscription;
+  StreamSubscription<double>? _fuelSubscription;
+  StreamSubscription<int>? _rpmSubscription;
+  StreamSubscription<double>? _inclinationSubscription;
 
   @override
   void initState() {
+
     super.initState();
     _initRpmListener();
     _initInclinationListener();
-    _initDistanceListener();
-    _initFuelListener();
+  }
+
+  void _reset() {
+    setState(() {
+      _currentDistance = 0.0;
+      _currentRpm = 0;
+      _allTime = 0;
+      _timeOnGreenRPM = 0;
+      _fuelConsumed = 0.0;
+      _currentInclination = 0.0;
+      _zeroInclination = 0.0;
+      _totalFuel = 0.0;
+      _currentDistance = 0.0;
+      _tipTile = "Bem-vindo!";
+      _tipMessage = "Comece a dirigir para ver dicas em tempo real.";
+      _tipType = "good";
+    });
+    BleService.reset();
   }
 
   Future<void> _initRpmListener() async {
     List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
 
-    _device = devices.first;
+    if (devices.isNotEmpty) {
+      _device = devices.first;
+    } else {
+      print("Nenhum dispositivo conectado.");
+      return;
+    }
 
     // Escuta o stream de RPM do BleService
     _rpmSubscription = BleService.rpmStream.listen((rpm) {
@@ -83,10 +106,27 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       });
     });
 
-    // Solicita RPM a cada 1 segundo
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      BleService.requestRpm();
-      BleService.requestSpeed();
+    _distanceSubscription = BleService.distanceStream.listen((distance) {
+      print('Distância recebida: $distance');
+      setState(() {
+        _currentDistance = distance;
+      });
+    });
+
+    _fuelSubscription = BleService.fuelStream.listen((fuel) {
+      print('Combustível recebido: $fuel');
+      setState(() {
+        _totalFuel = fuel;
+      });
+    });
+
+    // Solicita DATA a cada 1 segundo
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      await BleService.requestFuelRate();
+      await Future.delayed(Duration(milliseconds: 300));
+      await BleService.requestRpm();
+      await Future.delayed(Duration(milliseconds: 300));
+      await BleService.requestSpeed();
       _allTime++;
       if (_currentRpm <= _greenRpm) {
         _timeOnGreenRPM++;
@@ -106,22 +146,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
             greenRpm > 2500
                 ? greenRpm
                 : 2500; // Ajusta o RPM verde com base na inclinação
-      });
-    });
-  }
-
-  void _initDistanceListener() {
-    _distanceSubscription = BleService.distanceStream.listen((distance) {
-      setState(() {
-        _currentDistance = distance;
-      });
-    });
-  }
-
-  void _initFuelListener() {
-    _fuelSubscription = BleService.fuelStream.listen((fuel) {
-      setState(() {
-        _totalFuel = fuel;
       });
     });
   }
@@ -150,6 +174,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
               context: context,
               menssage: "Deseja realmente cancelar está viagem?",
               function: () {
+                widget.onReturn();
                 Navigator.pop(context);
               },
             );
@@ -182,7 +207,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 greenEnd: _greenRpm.toDouble(),
               ),
               EmissaoCarbonoCard(
-                valor: "25.6",
+                valor: controller.calcularEmissaoCarbono(combustivel, _totalFuel).toStringAsFixed(2),
                 unidade: "kgCO2",
                 status: "good", // ou "medium" ou "bad"
               ),
@@ -229,44 +254,69 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          confirmDialog(context: context,
-              menssage: "Deseja realmente salvar esta viagem?",
-              function: () async {
-                double consumoCombustivelODB = _totalFuel; //dados que serão coletados do ODBII
-                double emissaoCarbono = await controller.calcularEmissaoCarbono(
-                  widget.combustivel,
-                  consumoCombustivelODB,
-                ); //Emissão de carbono
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                confirmDialog(
+                    context: context,
+                    menssage: "Deseja realmente resetar a viagem?",
+                    function: _reset);
+              },
+              icon: Icon(Icons.restart_alt),
+              label: Text('Resetar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[300],
+                foregroundColor: Colors.black,
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                confirmDialog(
+                    context: context,
+                    menssage: "Deseja realmente salvar esta viagem?",
+                    function: () async {
+                      double consumoCombustivelODB = _totalFuel;
+                      double emissaoCarbono = await controller.calcularEmissaoCarbono(
+                        widget.combustivel,
+                        consumoCombustivelODB,
+                      );
 
-                final viagem = EcoDriveModel(
-                  nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
-                  duracaoViagem: _allTime,
-                  tempoRpmVerde: _timeOnGreenRPM,
-                  dataViagem: DateTime.now(),
-                  tipoCombustivel: widget.combustivel,
-                  quilometragemRodada: _currentDistance,
-                  consumoCombustivel: consumoCombustivelODB,
-                  emissaoCarbono: emissaoCarbono,
-                  avaliacaoViagem: "Excelente",
-                );
+                      final viagem = EcoDriveModel(
+                        nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
+                        duracaoViagem: _allTime,
+                        tempoRpmVerde: _timeOnGreenRPM,
+                        dataViagem: DateTime.now(),
+                        tipoCombustivel: widget.combustivel,
+                        quilometragemRodada: _currentDistance,
+                        consumoCombustivel: consumoCombustivelODB,
+                        emissaoCarbono: emissaoCarbono,
+                        avaliacaoViagem: "Excelente",
+                      );
 
-                await controller.salvarViagem(viagem);
-                print("Viagem salva com sucesso!");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Viagem salva com sucesso!')),
-                );
+                      await controller.salvarViagem(viagem);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Viagem salva com sucesso!')),
+                      );
 
-                widget.onReturn(); 
-                Navigator.pop(context);
-              }
-          );
-        },
-        backgroundColor: AppColors.colorMain,
-        foregroundColor: AppColors.colorMainText,
-        label: const Text('Salvar Viagem'),
-        icon: const Icon(Icons.save),
+                      _reset();
+
+                      widget.onReturn();
+                      Navigator.pop(context);
+                    });
+              },
+              icon: Icon(Icons.save),
+              label: Text('Finalizar Viagem'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.colorMain,
+                foregroundColor: AppColors.colorMainText,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
