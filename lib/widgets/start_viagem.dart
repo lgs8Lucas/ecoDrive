@@ -26,13 +26,15 @@ Future<String?> iniciarViagem({
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: combustivel,
-                      items: <String>['Gasolina', 'Etanol', 'Diesel', "Flex"]
-                          .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
+                      items:
+                          <String>['Gasolina', 'Etanol', 'Diesel', "Flex"].map((
+                            String value,
+                          ) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
                           combustivel = newValue!;
@@ -56,13 +58,13 @@ Future<String?> iniciarViagem({
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => EcoDrivePage(combustivel: combustivel)),
-                  );
+                  Navigator.of(
+                    context,
+                  ).pop(combustivel); // Retorna o valor selecionado
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,     // Cor de fundo
-                  foregroundColor: Colors.white,     // Cor do texto
+                  backgroundColor: Colors.green, // Cor de fundo
+                  foregroundColor: Colors.white, // Cor do texto
                 ),
                 child: const Text("Iniciar"),
               ),
@@ -73,4 +75,3 @@ Future<String?> iniciarViagem({
     },
   );
 }
-

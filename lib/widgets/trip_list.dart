@@ -11,7 +11,7 @@ import 'package:ecoDrive/widgets/confirmDialog.dart';
 final EcoDriveController controller = EcoDriveController();
 final EcoDriveRepository repository = EcoDriveRepository();
 
-Future<List<Widget>> listarHistorico(BuildContext context) async {
+Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturnFromViagem) async {
   final viagens = await controller.listarViagens();
 
   return viagens.map((viagem) {
@@ -22,13 +22,14 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ViagemPage(id: viagem.id!), // Aqui está correto
+              builder: (context) => ViagemPage(id: viagem.id!),
             ),
           );
+          onReturnFromViagem(); // Atualiza ao voltar
         },
         subtitle: Text("Combustível: ${viagem.tipoCombustivel}", style: AppStyles.simpleText),
         title: Text(
@@ -43,10 +44,7 @@ Future<List<Widget>> listarHistorico(BuildContext context) async {
               menssage: "Deseja realmente excluir esta viagem?",
               function: () async {
                 await repository.delete(viagem);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
+                onReturnFromViagem();   // Atualiza a lista ao voltar
               },
             );
           },

@@ -1,9 +1,11 @@
+import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:flutter/material.dart';
 import '../shared/app_colors.dart';
 import '../widgets/bluetooth_status_widget.dart';
 import '../widgets/faq_dialog.dart';
 import '../widgets/start_viagem.dart';
 import '../widgets/trip_list.dart';
+import 'eco_drive_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -27,7 +29,9 @@ class _HomePageState extends State<HomePage> {
 
   void _loadHistorico() {
     setState(() {
-      _historicoFuture = listarHistorico(context);
+      _historicoFuture = listarHistorico(context, () {
+        _loadHistorico(); // callback para atualizar a lista após voltar da ViagemPage ou deletar
+      });
     });
   }
 
@@ -65,9 +69,7 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         padding: EdgeInsets.all(20),
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.colorWhite,
-        ),
+        decoration: BoxDecoration(color: AppColors.colorWhite),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -86,10 +88,7 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 25),
             Text(
               "Historico de Viagens",
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
             ),
             Expanded(
               child: FutureBuilder<List<Widget>>(
@@ -104,13 +103,11 @@ class _HomePageState extends State<HomePage> {
                   return ListView(
                     physics: BouncingScrollPhysics(),
                     scrollDirection: Axis.vertical,
-                    children: [
-                      ...historicoWidgets,
-                    ],
+                    children: [...historicoWidgets],
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -118,13 +115,30 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           final combustivel = await iniciarViagem(
             context: context,
-            menssage: 'Informe o tipo de combustivel que está utilizando?',
+            menssage: 'Informe o tipo de combustível que está utilizando?',
           );
+
+          if (combustivel != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => EcoDrivePage(
+                      combustivel: combustivel,
+                      onReturn: () {
+                        setState(() {
+                          _loadHistorico(); // Atualiza a lista de histórico ao voltar
+                        });
+                      },
+                    ),
+              ),
+            );
+          }
         },
         backgroundColor: AppColors.colorMain,
         foregroundColor: AppColors.colorMainText,
-        label: Text('Iniciar Viagem'),
-        icon: Icon(Icons.directions_car_rounded),
+        label: const Text('Iniciar Viagem'),
+        icon: const Icon(Icons.directions_car_rounded),
       ),
     );
   }

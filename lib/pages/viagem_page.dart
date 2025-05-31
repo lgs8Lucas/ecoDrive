@@ -88,10 +88,7 @@ class ViagemPage extends StatelessWidget {
                             menssage: "Deseja realmente excluir esta viagem?",
                             function: () async {
                               await repository.delete(viagem);
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => HomePage()),
-                              );
+                              Navigator.pop(context);
                             },
                           );
                         },
