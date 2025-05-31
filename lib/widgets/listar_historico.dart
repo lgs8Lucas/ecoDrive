@@ -11,23 +11,25 @@ import 'package:ecoDrive/widgets/confirmDialog.dart';
 final EcoDriveController controller = EcoDriveController();
 final EcoDriveRepository repository = EcoDriveRepository();
 
-Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturnFromViagem) async {
+Future<List<Widget>> listarHistorico(
+  BuildContext context,
+  VoidCallback onReturnFromViagem,
+) async {
   final viagens = await controller.listarViagens();
 
   return viagens.map((viagem) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8.0),
       decoration: BoxDecoration(
         color: AppColors.colorAlterBackground,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
+        tileColor: AppColors.colorAlterBackground,
         onTap: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => ViagemPage(id: viagem.id!),
-            ),
+            MaterialPageRoute(builder: (context) => ViagemPage(id: viagem.id!)),
           );
           onReturnFromViagem(); // Atualiza ao voltar
         },
@@ -38,33 +40,90 @@ Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturn
               viagem.nomeViagem,
               style: AppStyles.simpleText.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
             Text(
-              "${DateFormat('dd/MM/yyyy').format(viagem.dataViagem)}",
-              style: AppStyles.simpleText,
+              DateFormat('dd/MM/yyyy').format(viagem.dataViagem),
+              style: AppStyles.simpleText.copyWith(fontSize: 14),
             ),
           ],
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Duração: ${formatTempoViagem(viagem.duracaoViagem)}",
-              style: AppStyles.simpleText,
-            ),
-            Text(
-              "Emissão de carbono: ${viagem.emissaoCarbono} kg CO₂",
-              style: AppStyles.simpleText,
-            ),
-            Text(
-              "Combustível: ${viagem.tipoCombustivel}",
-              style: AppStyles.simpleText,
-            ),
-          ],
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.speed, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    "Distância: ",
+                    style: AppStyles.simpleText.copyWith(fontSize: 14),
+                  ),
+                  Text(
+                    "${viagem.quilometragemRodada} km",
+                    style: AppStyles.simpleText.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.timer, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        formatTempoViagem(viagem.duracaoViagem),
+                        style: AppStyles.simpleText.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    children: [
+                      const Text("⛽", style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 4),
+                      Text(
+                        viagem.tipoCombustivel,
+                        style: AppStyles.simpleText.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Text("🌍", style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 4),
+                  Text(
+                    "Emissão de carbono: ",
+                    style: AppStyles.simpleText.copyWith(fontSize: 14),
+                  ),
+                  Text(
+                    "${viagem.emissaoCarbono} kg CO₂",
+                    style: AppStyles.simpleText.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         trailing: IconButton(
-          icon: Icon(Icons.delete, color: Colors.red),
+          icon: const Icon(Icons.delete, color: Colors.red),
           onPressed: () {
             confirmDialog(
               context: context,
@@ -77,13 +136,11 @@ Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturn
           },
         ),
       ),
-
     );
+
   }).toList();
 }
 
 String formatTempoViagem(int duration) {
   return "$duration s";
 }
-
-

@@ -318,9 +318,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                         content: Text('Viagem salva com sucesso!'),
                       ),
                     );
-
-                    _reset();
-
                     widget.onReturn();
                     Navigator.pop(context);
                   },
