@@ -36,7 +36,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   final _inclinationThreshold = 10.0; // Limite para considerar inclinação significativa
 
   String _tipTile = "Bem-vindo!";
-  String _tipMessage = "Comece a dirigir para ver dicas em tempo real.";
+  String _tipMessage = "Comece a dirigir para ver dicas.";
   String _tipType = "good";
   int _allTime = 0;
   int _timeOnGreenRPM = 0;
@@ -53,6 +53,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   StreamSubscription<double>? _fuelSubscription;
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
+  late Future<double> _emissaoFuture;
 
   @override
   void initState() {
@@ -60,6 +61,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     super.initState();
     _initRpmListener();
     _initInclinationListener();
+
+
   }
 
   void _reset() {
@@ -74,7 +77,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       _totalFuel = 0.0;
       _currentDistance = 0.0;
       _tipTile = "Bem-vindo!";
-      _tipMessage = "Comece a dirigir para ver dicas em tempo real.";
+      _tipMessage = "Comece a dirigir para ver dicas!";
       _tipType = "good";
     });
     BleService.reset();
@@ -194,7 +197,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(10),
           child: Column(
             children: [
               TipCard(
@@ -206,12 +209,24 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 currentRpm: _currentRpm.toDouble(),
                 greenEnd: _greenRpm.toDouble(),
               ),
-              EmissaoCarbonoCard(
-                valor: controller.calcularEmissaoCarbono(combustivel, _totalFuel).toStringAsFixed(2),
-                unidade: "kgCO2",
-                status: "good", // ou "medium" ou "bad"
+              const SizedBox(height: 2),
+              FutureBuilder<double>(
+                future: controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Erro: ${snapshot.error}');
+                  } else {
+                    return EmissaoCarbonoCard(
+                      valor: snapshot.data!.toStringAsFixed(2),
+                      unidade: "kgCO2",
+                      status: "good", //
+                    );
+                  }
+                },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -221,7 +236,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                     value: _currentDistance,
                     unit: "Km",
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 15),
                   CircularInfoWidget(
                     icon: Icons.oil_barrel,
                     label: "Consumo de Combustivel",
@@ -230,7 +245,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -238,7 +253,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                     angle: _currentInclination - _zeroInclination,
                     threshold: _inclinationThreshold,
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 30),
                   FilledButton(
                     onPressed:
                         () => {
@@ -255,7 +270,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(5.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [

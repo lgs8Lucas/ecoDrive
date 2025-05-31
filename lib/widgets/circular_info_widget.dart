@@ -21,8 +21,8 @@ class CircularInfoWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 95,
-          height: 95,
+          width: 90,
+          height: 90,
           decoration: BoxDecoration(
             color: AppColors.colorAlterBackground.withOpacity(0.1),
             shape: BoxShape.circle,
@@ -30,13 +30,13 @@ class CircularInfoWidget extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 40, color: AppColors.colorBlack),
+              Icon(icon, size: 35, color: AppColors.colorBlack),
               Positioned(
                 bottom: 10,
                 child: Text(
                   "${value.toStringAsFixed(1)} $unit",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: AppColors.colorBlack,
                   ),
@@ -46,7 +46,7 @@ class CircularInfoWidget extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: 5),
         Text(
           label,
           style: TextStyle(fontSize: 14, color: AppColors.colorBlack),

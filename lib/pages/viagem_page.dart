@@ -68,10 +68,13 @@ class ViagemPage extends StatelessWidget {
                         children: [
                           SizedBox(height: 10),
                           LinhaFormatada("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
+                          LinhaFormatada("Nome da Viagem", viagem.nomeViagem),
                           LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
                           LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
                           LinhaFormatada("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
+                          LinhaFormatada("Tempo de RPM Verde", "${viagem.tempoRpmVerde.toString()} s"),
                           LinhaFormatada("⛽ Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
+                          LinhaFormatada("Duração da viagem", "${viagem.duracaoViagem.toStringAsFixed(2)} s"),
                           LinhaFormatada("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
                           LinhaFormatada("⭐ Avaliação", viagem.avaliacaoViagem),
                           SizedBox(height: 12),
