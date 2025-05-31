@@ -57,13 +57,14 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   StreamSubscription<double>? _fuelSubscription;
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
-  late Future<double> _emissaoFuture;
+  double? _emissaoCarbonoAtual;
 
   @override
   void initState() {
     super.initState();
     _initRpmListener();
     _initInclinationListener();
+    _atualizarEmissaoCarbono();
   }
 
   void _reset() {
@@ -123,6 +124,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       setState(() {
         _totalFuel = fuel;
       });
+      _atualizarEmissaoCarbono();
     });
 
     // Solicita DATA a cada 1 segundo
@@ -154,6 +156,21 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       });
     });
   }
+
+  void _atualizarEmissaoCarbono() {
+    controller
+        .calcularEmissaoCarbono(widget.combustivel, _totalFuel)
+        .then((valor) {
+      if (mounted) {
+        setState(() {
+          _emissaoCarbonoAtual = valor;
+        });
+      }
+    }).catchError((_) {
+      // Ignora erros e mantém o valor antigo
+    });
+  }
+
 
   @override
   void dispose() {
@@ -211,18 +228,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 greenEnd: _greenRpm.toDouble(),
               ),
               const SizedBox(height: 2),
-              FutureBuilder<double>(
-                future: controller.calcularEmissaoCarbono(
-                  widget.combustivel,
-                  _totalFuel,
-                ),
-                builder: (context, snapshot) {
-                  return EmissaoCarbonoCard(
-                    valor: snapshot.data!.toStringAsFixed(2),
-                    unidade: "kgCO2",
-                    status: "good", //
-                  );
-                },
+              EmissaoCarbonoCard(
+                valor: (_emissaoCarbonoAtual ?? 0.0).toStringAsFixed(2),
+                unidade: "kgCO2",
+                status: "good",
               ),
               const SizedBox(height: 15),
               Row(
