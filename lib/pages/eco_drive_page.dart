@@ -11,7 +11,7 @@ import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
-
+import '../widgets/carbon_emission_widget.dart';
 import 'home_page.dart';
 
 final EcoDriveController controller = EcoDriveController();
@@ -43,9 +43,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       10.0; // Limite para considerar inclinação significativa
   double _totalFuel = 0.0;
   StreamSubscription<double>? _fuelSubscription;
-  String _tipMessage =
-      "Você está dirigindo de forma eficiente! Continue assim!"; // Mensagem da dica
-  String _tipType = 'good'; // Tipo da dica, pode ser 'good' ou 'bad'
+  String _tipTile = "Bem-vindo!";
+  String _tipMessage = "Comece a dirigir para ver dicas em tempo real.";
+  String _tipType = "good";
 
   double _currentDistance = 0.0;
   StreamSubscription<double>? _distanceSubscription;
@@ -69,9 +69,11 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       setState(() {
         _currentRpm = rpm;
         if (rpm > _greenRpm) {
+          _tipTile = "Atenção!";
           _tipMessage = "Reduza as rotações para economizar combustível!";
           _tipType = 'bad';
         } else {
+          _tipTile = "Ótima direção!";
           _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
           _tipType = 'good';
         }
@@ -138,6 +140,18 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.colorMain),
+          onPressed: () {
+            confirmDialog(
+              context: context,
+              menssage: "Deseja realmente cancelar está viagem?",
+              function: () {
+                Navigator.pop(context);
+              },
+            );
+          },
+        ),
         title: Text(
           'EcoDrive',
           style: TextStyle(
@@ -155,16 +169,19 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TipBox(tipMessage: _tipMessage, type: _tipType),
+              TipCard(
+                titulo: _tipTile,
+                mensagem: _tipMessage,
+                tipType: _tipType,
+              ),
               RpmAccelerometer(
                 currentRpm: _currentRpm.toDouble(),
                 greenEnd: _greenRpm.toDouble(),
               ),
-              CircularInfoWidget(
-                icon: Icons.local_fire_department_rounded,
-                label: "Emissão de carbono",
-                value: 0,
-                unit: "Kg",
+              EmissaoCarbonoCard(
+                valor: "25.6",
+                unidade: "kgCO2",
+                status: "good", // ou "medium" ou "bad"
               ),
               const SizedBox(height: 10),
               Row(

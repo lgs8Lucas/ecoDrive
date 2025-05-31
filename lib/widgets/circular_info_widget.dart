@@ -21,8 +21,8 @@ class CircularInfoWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 100,
-          height: 100,
+          width: 95,
+          height: 95,
           decoration: BoxDecoration(
             color: AppColors.colorAlterBackground.withOpacity(0.1),
             shape: BoxShape.circle,
