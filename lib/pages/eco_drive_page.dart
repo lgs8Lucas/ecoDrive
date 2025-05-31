@@ -12,7 +12,6 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
 import '../widgets/carbon_emission_widget.dart';
-import 'home_page.dart';
 
 final EcoDriveController controller = EcoDriveController();
 
@@ -318,7 +317,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                       quilometragemRodada: _currentDistance,
                       consumoCombustivel: consumoCombustivelODB,
                       emissaoCarbono: emissaoCarbono,
-                      avaliacaoViagem: "Excelente",
+                      avaliacaoViagem: _timeOnGreenRPM >= (_allTime * 0.9)
+                          ? "Excelente"
+                          : _timeOnGreenRPM >= (_allTime * 0.7)? "Normal" : "Ruim",
                     );
 
                     await controller.salvarViagem(viagem);

@@ -1,4 +1,3 @@
-import 'package:ecoDrive/pages/home_page.dart';
 import 'package:ecoDrive/pages/viagem_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
