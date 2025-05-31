@@ -37,11 +37,11 @@ class EmissaoCarbonoCard extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -57,11 +57,11 @@ class EmissaoCarbonoCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 1),
               Text(
                 "$valor $unidade",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 19,
                   fontWeight: FontWeight.bold,
                   color: iconColor,
                 ),
@@ -71,7 +71,7 @@ class EmissaoCarbonoCard extends StatelessWidget {
           const Spacer(),
           // Ícone à direita
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
@@ -79,7 +79,7 @@ class EmissaoCarbonoCard extends StatelessWidget {
             child: Icon(
               iconData,
               color: iconColor,
-              size: 40,
+              size: 30,
             ),
           ),
         ],
