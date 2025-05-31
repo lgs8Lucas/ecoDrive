@@ -4,7 +4,7 @@ import '../shared/app_colors.dart';
 import '../widgets/bluetooth_status_widget.dart';
 import '../widgets/faq_dialog.dart';
 import '../widgets/start_viagem.dart';
-import '../widgets/trip_list.dart';
+import '../widgets/listar_historico.dart';
 import 'eco_drive_page.dart';
 
 class HomePage extends StatefulWidget {
