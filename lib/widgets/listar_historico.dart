@@ -50,7 +50,7 @@ Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturn
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Tempo de viagem: ${formatTempoViagem(viagem.duracaoViagem)}",
+              "Duração: ${formatTempoViagem(viagem.duracaoViagem)}",
               style: AppStyles.simpleText,
             ),
             Text(
