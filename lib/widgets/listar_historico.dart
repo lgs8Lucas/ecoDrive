@@ -31,10 +31,37 @@ Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturn
           );
           onReturnFromViagem(); // Atualiza ao voltar
         },
-        subtitle: Text("Combustível: ${viagem.tipoCombustivel}", style: AppStyles.simpleText),
-        title: Text(
-          "Data: " + DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem),
-          style: AppStyles.simpleText,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              viagem.nomeViagem,
+              style: AppStyles.simpleText.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              "${DateFormat('dd/MM/yyyy').format(viagem.dataViagem)}",
+              style: AppStyles.simpleText,
+            ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Tempo de viagem: ${formatTempoViagem(viagem.duracaoViagem)}",
+              style: AppStyles.simpleText,
+            ),
+            Text(
+              "Emissão de carbono: ${viagem.emissaoCarbono} kg CO₂",
+              style: AppStyles.simpleText,
+            ),
+            Text(
+              "Combustível: ${viagem.tipoCombustivel}",
+              style: AppStyles.simpleText,
+            ),
+          ],
         ),
         trailing: IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
@@ -44,13 +71,19 @@ Future<List<Widget>> listarHistorico(BuildContext context, VoidCallback onReturn
               menssage: "Deseja realmente excluir esta viagem?",
               function: () async {
                 await repository.delete(viagem);
-                onReturnFromViagem();   // Atualiza a lista ao voltar
+                onReturnFromViagem(); // Atualiza a lista ao voltar
               },
             );
           },
         ),
       ),
+
     );
   }).toList();
 }
+
+String formatTempoViagem(int duration) {
+  return "$duration s";
+}
+
 

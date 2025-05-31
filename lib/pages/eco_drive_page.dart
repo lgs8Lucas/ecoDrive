@@ -224,7 +224,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 ); //Emissão de carbono
 
                 final viagem = EcoDriveModel(
-                  nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
+                  nomeViagem: "Viagem padrão",
                   duracaoViagem: _allTime,
                   tempoRpmVerde: _timeOnGreenRPM,
                   dataViagem: DateTime.now(),
@@ -241,7 +241,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   const SnackBar(content: Text('Viagem salva com sucesso!')),
                 );
 
-                widget.onReturn(); 
+                widget.onReturn();
                 Navigator.pop(context);
               }
           );

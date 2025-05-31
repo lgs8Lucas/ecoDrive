@@ -53,4 +53,5 @@
       tempoRpmVerde: map['tempoRpmVerde'] ?? 0,
     );
   }
+
 }
