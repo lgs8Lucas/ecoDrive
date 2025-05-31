@@ -19,8 +19,11 @@ final EcoDriveController controller = EcoDriveController();
 class EcoDrivePage extends StatefulWidget {
   final String combustivel; // variável que vai receber o valor
 
+  final VoidCallback onReturn; // Callback para atualizar ao sair
+
+
   // construtor com o parâmetro required
-  const EcoDrivePage({Key? key, required this.combustivel}) : super(key: key);
+  const EcoDrivePage({Key? key, required this.combustivel, required this.onReturn}) : super(key: key);
 
   @override
   State<EcoDrivePage> createState() => _EcoDrivePageState();
@@ -238,6 +241,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   const SnackBar(content: Text('Viagem salva com sucesso!')),
                 );
 
+                widget.onReturn(); 
                 Navigator.pop(context);
               }
           );
