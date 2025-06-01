@@ -35,12 +35,14 @@ class BleService {
   static final _fuelStreamController = StreamController<double>.broadcast(); // Stream para o consumo de combustível
   static Stream<double> get fuelStream => _fuelStreamController.stream; // Stream para o consumo de combustível
 
+  static final StreamController<double> _fuelRateController = StreamController<double>.broadcast(); // controlador para o consumo instantâneo de combustível
+  static Stream<double> get fuelRateStream => _fuelRateController.stream; // Stream para o consumo instantâneo de combustível
+
   static final StreamController<double> _speedStreamController = StreamController.broadcast();
   static Stream<double> get speedStream => _speedStreamController.stream;
 
   static double _totalDistance = 0.0; // Distância acumulada em km
   static double _totalFuelConsumed = 0.0; // Total de combustível consumido em litros
-  static final StreamController<double> _fuelRateController = StreamController<double>.broadcast(); // Consumo instantâneo de combustível em litros por hora
   static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
   static DateTime? _lastSpeedUpdate;
 
@@ -243,12 +245,10 @@ class BleService {
     // }
 
     if (response.contains('41 10')) {  // PID do MAF
-      final fuelRateFromMAF = parseFuelRateFromMAF(response);
+      final fuelRateFromMAF = parseFuelRateFromMAF(response); // Função para extrair o consumo de combustível
       if (fuelRateFromMAF != null) {
-        // Atualiza o consumo usando sua função (mesma lógica que para o consumo direto)
-        updateFuelConsumption(fuelRateFromMAF);
-        // enviar para um stream para UI reagir a essa atualização
-        _fuelRateController.add(fuelRateFromMAF);
+        updateFuelConsumption(fuelRateFromMAF); // Atualiza o consumo usando sua função (mesma lógica que para o consumo direto)
+        _fuelRateController.add(fuelRateFromMAF); // notificar um StreamController, atualizar UI, salvar, etc.
       }
     }
   }
@@ -389,9 +389,6 @@ class BleService {
     final fuelConsumedInLiters = (fuelRate / 3600.0) * elapsedSeconds;
 
     _totalFuelConsumed += fuelConsumedInLiters;
-
-    print('Consumo acumulado: $_totalFuelConsumed litros');
-    // notificar um StreamController, atualizar UI, salvar, etc.
   }
 
   // Atualizar a velocidade
