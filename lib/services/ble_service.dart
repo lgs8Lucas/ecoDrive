@@ -5,7 +5,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 class BleService {
   static final _bluetoothStateController = StreamController<bool>.broadcast();
   static final _odbConnectionStateController =
-      StreamController<bool>.broadcast();
+  StreamController<bool>.broadcast();
 
   static Stream<bool> get bluetoothStateStream =>
       _bluetoothStateController.stream;
@@ -19,8 +19,7 @@ class BleService {
 
   static final List<Map<String, String>> devices = [];
   static final StreamController<List<Map<String, String>>>
-  _deviceStreamController =
-      StreamController<List<Map<String, String>>>.broadcast();
+  _deviceStreamController = StreamController<List<Map<String, String>>>.broadcast();
   static Stream<List<Map<String, String>>> get deviceStream =>
       _deviceStreamController.stream;
 
@@ -42,7 +41,7 @@ class BleService {
   static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
   static DateTime? _lastSpeedUpdate;
 
-
+  // Inicializar o Bluetooth
   static void initialize() {
     _bluetoothStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       bool isEnabled = state == BluetoothAdapterState.on;
@@ -56,6 +55,7 @@ class BleService {
     });
   }
 
+  // Iniciar a escaneamento
   static Future<void> startScanning() async {
     devices.clear();
     _deviceStreamController.add([]);
@@ -65,12 +65,12 @@ class BleService {
     _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       for (ScanResult r in results) {
         if (!devices.any(
-          (device) => device['id'] == r.device.remoteId.toString(),
+              (device) => device['id'] == r.device.remoteId.toString(),
         )) {
           devices.add({
             'id': r.device.remoteId.toString(),
             'name':
-                r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
+            r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
           _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
@@ -86,16 +86,19 @@ class BleService {
     _deviceStreamController.add(List<Map<String, String>>.from(devices));
   }
 
+  // Parar a escaneamento
   static void stopScanning() {
     _scanSubscription?.cancel();
     _scanSubscription = null;
   }
 
+  // Cancelar a inscrição do estado do dispositivo
   static void _cancelDeviceStateSubscription() {
     _deviceStateSubscription?.cancel();
     _deviceStateSubscription = null;
   }
 
+  // Conecta ao dispositivo
   static Future<void> connectToDevice(String deviceId) async {
     try {
       // Obtem o dispositivo com base no ID fornecido
@@ -127,6 +130,7 @@ class BleService {
     }
   }
 
+  // Desconecta do dispositivo
   static void dispose() {
     _bluetoothStateSubscription?.cancel();
     stopScanning();
@@ -139,6 +143,7 @@ class BleService {
     _fuelLevelController.close();
   }
 
+  // Verificar se o Bluetooth está ligado
   static Future<bool> isBluetoothOn() async {
     BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
     return state == BluetoothAdapterState.on;
@@ -149,42 +154,57 @@ class BleService {
   static BluetoothCharacteristic? _notifyCharacteristic;
 
   static final StreamController<int> _rpmController =
-      StreamController<int>.broadcast();
+  StreamController<int>.broadcast();
 
+  // Stream para coleta do RPM
   static Stream<int> get rpmStream =>
       _rpmController.stream; // Stream para coleta do RPM
 
-  static final Guid serviceUUID = Guid(
-    '0000fff0-0000-1000-8000-00805f9b34fb',
-  ); // Info pega do próprio OBD
-  static final Guid notifyUUID = Guid('0000fff1-0000-1000-8000-00805f9b34fb');
-  static final Guid writeUUID = Guid('0000fff2-0000-1000-8000-00805f9b34fb');
-
-  // Notificações do ODB
+  // Setup OBD buscando UUIDs automaticamente
   static Future<void> setupObdCommunication() async {
     final device = AppSettings.connectedDevice;
     if (device == null) return;
 
     List<BluetoothService> services = await device.discoverServices();
 
-    final obdService = services.firstWhere(
-      (s) => s.uuid == serviceUUID,
-      orElse: () => throw Exception('Serviço OBD não encontrado'),
-    );
+    BluetoothCharacteristic? notifyChar;
+    BluetoothCharacteristic? writeChar;
 
-    _notifyCharacteristic = obdService.characteristics.firstWhere(
-      (c) => c.uuid == notifyUUID,
-    );
-    _writeCharacteristic = obdService.characteristics.firstWhere(
-      (c) => c.uuid == writeUUID,
-    );
+    for (var service in services) {
+      print('Serviço encontrado: ${service.uuid}');
+      for (var c in service.characteristics) {
+        print(' - Característica: ${c.uuid}');
+
+        // Procura característica com notify
+        if (notifyChar == null && c.properties.notify) {
+          notifyChar = c;
+        }
+
+        // Procura característica com write ou writeWithoutResponse
+        if (writeChar == null &&
+            (c.properties.write || c.properties.writeWithoutResponse)) {
+          writeChar = c;
+        }
+
+        if (notifyChar != null && writeChar != null) break;
+      }
+      if (notifyChar != null && writeChar != null) break;
+    }
+
+    if (notifyChar == null || writeChar == null) {
+      throw Exception('Não foi possível encontrar características Notify e Write no dispositivo');
+    }
+
+    _notifyCharacteristic = notifyChar;
+    _writeCharacteristic = writeChar;
 
     await _notifyCharacteristic!.setNotifyValue(true);
-
     _notifyCharacteristic!.value.listen(_onDataReceived);
+
+    print('Configuração do OBD concluída. Notify: ${_notifyCharacteristic!.uuid}, Write: ${_writeCharacteristic!.uuid}');
   }
 
-  // ENviando comandos ao RPM
+  // Enviando comandos ao RPM
   static Future<void> requestRpm() async {
     if (_writeCharacteristic == null) return;
 
@@ -234,11 +254,12 @@ class BleService {
     return null;
   }
 
+  // Atualizar a distância percorrida
   static void updateDistance(double currentSpeed) {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final timeElapsed =
         (currentTimestamp - _lastDistanceTimestamp) /
-        3600000.0; // Tempo em horas
+            3600000.0; // Tempo em horas
 
     final distance =
         _lastSpeed * timeElapsed; // Distância percorrida no intervalo
@@ -250,6 +271,7 @@ class BleService {
     _distanceStreamController.add(_totalDistance);
   }
 
+  // Traduzir a resposta
   static double? _parseSpeedResponse(String response) {
     try {
       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
@@ -263,23 +285,27 @@ class BleService {
     return null;
   }
 
+  // Enviar comando para obter a velocidade
   static Future<void> requestSpeed() async {
     if (_writeCharacteristic == null) return;
     final command = '010D\r'.codeUnits; // PID 0x0D para velocidade
     await _writeCharacteristic!.write(command, withoutResponse: true);
   }
 
+  // Enviar comando para obter o RPM
   static void resetDistance() {
     _totalDistance = 0.0;
     _distanceStreamController.add(_totalDistance);
   }
 
+  // Enviar comando para obter o consumo instantâneo de combustível
   static Future<void> requestFuelRate() async {
     if (_writeCharacteristic == null) return;
     final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
     await _writeCharacteristic!.write(command, withoutResponse: true);
   }
 
+  // Traduzir a resposta
   static double? _parseFuelRateResponse(String response) {
     try {
       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
@@ -289,14 +315,13 @@ class BleService {
           (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
         final A = int.parse(bytes[2], radix: 16);
         final B = int.parse(bytes[3], radix: 16);
-
-        // Conversão: (A * 256 + B) / 20 para gramas/segundo
-        return ((A * 256) + B) / 20.0;
+        return ((A * 256) + B) / 20.0; // Em litros por hora
       }
     } catch (_) {}
     return null;
   }
 
+  // Atualizar o consumo de combustível
   static void updateFuelConsumption(double fuelRate) {
     final now = DateTime.now().millisecondsSinceEpoch;
     final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // segundos
@@ -310,6 +335,7 @@ class BleService {
     _fuelStreamController.add(_totalFuelConsumed);
   }
 
+  // Atualizar a velocidade
   static void updateSpeed(double speed) {
     final now = DateTime.now();
 
@@ -327,6 +353,7 @@ class BleService {
     _speedStreamController.add(speed);
   }
 
+  // Resetar os valores
   static void reset() {
     _totalFuelConsumed = 0.0;
     _totalDistance = 0.0;

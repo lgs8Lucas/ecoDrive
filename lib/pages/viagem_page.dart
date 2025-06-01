@@ -24,7 +24,8 @@ class ViagemPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Relatório',
+      appBar: AppBar(
+        title: Text('Relatório',
         style: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w700,
@@ -32,6 +33,8 @@ class ViagemPage extends StatelessWidget {
           letterSpacing: 1.0,
           ),
         ),
+        centerTitle: true,
+        backgroundColor: AppColors.colorWhite,
       ),
       body: FutureBuilder<EcoDriveModel?>(
         future: controller.buscarViagemPorId(id),
@@ -68,13 +71,13 @@ class ViagemPage extends StatelessWidget {
                         children: [
                           SizedBox(height: 10),
                           LinhaFormatada("📅 Data", DateFormat('dd/MM/yyyy HH:mm').format(viagem.dataViagem)),
-                          LinhaFormatada("Nome da Viagem", viagem.nomeViagem),
+                          LinhaFormatada("📝Nome da Viagem", viagem.nomeViagem),
                           LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
                           LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
+                          LinhaFormatada("⏱ Duração da viagem", "${viagem.duracaoViagem.toStringAsFixed(2)} s"),
+                          LinhaFormatada("⏱ Tempo de RPM Ideal", "${viagem.tempoRpmVerde.toString()} s"),
                           LinhaFormatada("⛽ Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
-                          LinhaFormatada("Tempo de RPM Verde", "${viagem.tempoRpmVerde.toString()} s"),
-                          LinhaFormatada("⛽ Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
-                          LinhaFormatada("Duração da viagem", "${viagem.duracaoViagem.toStringAsFixed(2)} s"),
+                          LinhaFormatada("📊 Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
                           LinhaFormatada("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
                           LinhaFormatada("⭐ Avaliação", viagem.avaliacaoViagem),
                           SizedBox(height: 12),

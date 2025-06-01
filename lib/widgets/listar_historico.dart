@@ -6,6 +6,7 @@ import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:ecoDrive/repositories/eco_drive_dao.dart';
 import 'package:ecoDrive/widgets/confirmDialog.dart';
+import 'package:ecoDrive/widgets/update_name.dart';
 
 final EcoDriveController controller = EcoDriveController();
 final EcoDriveRepository repository = EcoDriveRepository();
@@ -121,18 +122,33 @@ Future<List<Widget>> listarHistorico(
             ],
           ),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            confirmDialog(
-              context: context,
-              menssage: "Deseja realmente excluir esta viagem?",
-              function: () async {
-                await repository.delete(viagem);
-                onReturnFromViagem(); // Atualiza a lista ao voltar
-              },
-            );
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'editar') {
+              confirmDialogWithInput(
+                context: context,
+                menssage: "Insira um novo nome para a viagem:",
+                onConfirmed: (novoNome) async {
+                  viagem.nomeViagem = novoNome;
+                  await repository.update(viagem);
+                  onReturnFromViagem();
+                },
+              );
+            } else if (value == 'excluir') {
+              confirmDialog(
+                context: context,
+                menssage: "Deseja realmente excluir esta viagem?",
+                function: () async {
+                  await repository.delete(viagem);
+                  onReturnFromViagem();
+                },
+              );
+            }
           },
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem(value: 'editar', child: Text('Editar')),
+            const PopupMenuItem(value: 'excluir', child: Text('Excluir')),
+          ],
         ),
       ),
     );

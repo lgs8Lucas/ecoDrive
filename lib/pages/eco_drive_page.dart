@@ -55,6 +55,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   StreamSubscription<int>? _rpmSubscription;
   StreamSubscription<double>? _inclinationSubscription;
 
+  // Função para resetar os valores
   @override
   void initState() {
 
@@ -75,6 +76,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  // Função para resetar os valores
   void _reset() {
     setState(() {
       _currentDistance = 0.0;
@@ -93,6 +95,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     BleService.reset();
   }
 
+  // Função para iniciar o listener do RPM
   Future<void> _initRpmListener() async {
     List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
 
@@ -147,6 +150,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  // Função para iniciar o listener da inclinação
   Future<void> _initInclinationListener() async {
     _inclinationService.startListening();
     _inclinationSubscription = _inclinationService.inclinationStream.listen((
@@ -163,6 +167,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
   }
 
+  // Função para limpar os listeners
   @override
   void dispose() {
     _rpmSubscription?.cancel();
@@ -175,7 +180,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     super.dispose();
   }
 
-
+  // Função para construir a página
   @override
   Widget build(BuildContext context) {
     return Scaffold(
