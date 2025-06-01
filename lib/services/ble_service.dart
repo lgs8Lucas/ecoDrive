@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'dart:convert';
+
 
 class BleService {
   static final _bluetoothStateController = StreamController<bool>.broadcast();
@@ -27,17 +29,18 @@ class BleService {
   static Stream<double> get distanceStream => _distanceStreamController.stream;
   static int _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
 
-  static int _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch;
-  static final _fuelLevelController = StreamController<double>.broadcast();
-  static Stream<double> get fuelLevelStream => _fuelLevelController.stream;
-  static final _fuelStreamController = StreamController<double>.broadcast();
-  static Stream<double> get fuelStream => _fuelStreamController.stream;
+  static int _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch; // Timestamp do último consumo de combustível
+  static final _fuelLevelController = StreamController<double>.broadcast(); // Stream para o nível de combustível
+  static Stream<double> get fuelLevelStream => _fuelLevelController.stream; // Stream para o nível de combustível
+  static final _fuelStreamController = StreamController<double>.broadcast(); // Stream para o consumo de combustível
+  static Stream<double> get fuelStream => _fuelStreamController.stream; // Stream para o consumo de combustível
 
   static final StreamController<double> _speedStreamController = StreamController.broadcast();
   static Stream<double> get speedStream => _speedStreamController.stream;
 
   static double _totalDistance = 0.0; // Distância acumulada em km
   static double _totalFuelConsumed = 0.0; // Total de combustível consumido em litros
+  static final StreamController<double> _fuelRateController = StreamController<double>.broadcast(); // Consumo instantâneo de combustível em litros por hora
   static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
   static DateTime? _lastSpeedUpdate;
 
@@ -212,6 +215,7 @@ class BleService {
     await _writeCharacteristic!.write(command, withoutResponse: true);
   }
 
+  // Recebendo dados
   static void _onDataReceived(List<int> data) {
     final response = String.fromCharCodes(data);
     print('Resposta OBD: $response');
@@ -230,11 +234,21 @@ class BleService {
         updateDistance(speed);
       }
     }
-    if (response.contains('41 5E') || response.contains('41 66')) {
-      // PID para consumo instantâneo de combustível
-      final fuelRate = _parseFuelRateResponse(response);
-      if (fuelRate != null) {
-        updateFuelConsumption(fuelRate);
+    // if (response.contains('41 5E') || response.contains('41 66')) {
+    //   // PID para consumo instantâneo de combustível
+    //   final fuelRate = _parseFuelRateResponse(response);
+    //   if (fuelRate != null) {
+    //     updateFuelConsumption(fuelRate);
+    //   }
+    // }
+
+    if (response.contains('41 10')) {  // PID do MAF
+      final fuelRateFromMAF = parseFuelRateFromMAF(response);
+      if (fuelRateFromMAF != null) {
+        // Atualiza o consumo usando sua função (mesma lógica que para o consumo direto)
+        updateFuelConsumption(fuelRateFromMAF);
+        // enviar para um stream para UI reagir a essa atualização
+        _fuelRateController.add(fuelRateFromMAF);
       }
     }
   }
@@ -298,24 +312,66 @@ class BleService {
     _distanceStreamController.add(_totalDistance);
   }
 
-  // Enviar comando para obter o consumo instantâneo de combustível
-  static Future<void> requestFuelRate() async {
+  // // Enviar comando para obter o consumo instantâneo de combustível
+  // static Future<void> requestFuelRate() async {
+  //   if (_writeCharacteristic == null) return;
+  //   final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
+  //   await _writeCharacteristic!.write(command, withoutResponse: true);
+  // }
+
+  // // Traduzir a resposta
+  // static double? _parseFuelRateResponse(String response) {
+  //   try {
+  //     final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+  //     final bytes = clean.split(' ');
+  //
+  //     if (bytes.length >= 4 &&
+  //         (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
+  //       final A = int.parse(bytes[2], radix: 16);
+  //       final B = int.parse(bytes[3], radix: 16);
+  //       return ((A * 256) + B) / 20.0; // Em litros por hora
+  //     }
+  //   } catch (_) {}
+  //   return null;
+  // }
+
+  // // Atualizar o consumo de combustível
+  // static void updateFuelConsumption(double fuelRate) {
+  //   final now = DateTime.now().millisecondsSinceEpoch;
+  //   final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // segundos
+  //   _lastFuelTimestamp = now;
+  //
+  //   // Converte g/s * tempo = g → depois para litros (assumindo densidade média de 0.75 kg/L)
+  //   final fuelConsumedInLiters = ((fuelRate * elapsedSeconds) / 1000.0) / 0.75;
+  //
+  //   _totalFuelConsumed += fuelConsumedInLiters;
+  //
+  //   _fuelStreamController.add(_totalFuelConsumed);
+  // }
+
+  // Enviar comando para obter o consumo instantâneo de combustível com MFA fluxo de ar em gramas por segundo (g/s)
+  static Future<void> requestFuelRateViaMAF() async {
     if (_writeCharacteristic == null) return;
-    final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
+    final command = utf8.encode('0110\r'); // PID 01 10 = MAF
     await _writeCharacteristic!.write(command, withoutResponse: true);
   }
-
   // Traduzir a resposta
-  static double? _parseFuelRateResponse(String response) {
+  static double? parseFuelRateFromMAF(String response) {
     try {
       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
       final bytes = clean.split(' ');
 
-      if (bytes.length >= 4 &&
-          (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
+      if (bytes.length >= 4 && bytes[0] == '41' && bytes[1] == '10') {
         final A = int.parse(bytes[2], radix: 16);
         final B = int.parse(bytes[3], radix: 16);
-        return ((A * 256) + B) / 20.0; // Em litros por hora
+        final maf = ((256 * A) + B) / 100.0; // MAF em g/s
+
+        const afr = 14.7; // gasolina
+        const fuelDensity = 745.0; // g/L
+
+        final fuelRateLph = (maf * 3600) / (afr * fuelDensity);
+
+        return fuelRateLph;
       }
     } catch (_) {}
     return null;
@@ -324,21 +380,24 @@ class BleService {
   // Atualizar o consumo de combustível
   static void updateFuelConsumption(double fuelRate) {
     final now = DateTime.now().millisecondsSinceEpoch;
-    final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // segundos
+    if (_lastFuelTimestamp == 0) _lastFuelTimestamp = now;
+
+    final elapsedSeconds = (now - _lastFuelTimestamp) / 1000.0;
     _lastFuelTimestamp = now;
 
-    // Converte g/s * tempo = g → depois para litros (assumindo densidade média de 0.75 kg/L)
-    final fuelConsumedInLiters = ((fuelRate * elapsedSeconds) / 1000.0) / 0.75;
+    // Converte L/h para L/s, multiplica pelo tempo decorrido para obter litros consumidos
+    final fuelConsumedInLiters = (fuelRate / 3600.0) * elapsedSeconds;
 
     _totalFuelConsumed += fuelConsumedInLiters;
 
-    _fuelStreamController.add(_totalFuelConsumed);
+    print('Consumo acumulado: $_totalFuelConsumed litros');
+    // notificar um StreamController, atualizar UI, salvar, etc.
   }
 
   // Atualizar a velocidade
   static void updateSpeed(double speed) {
     final now = DateTime.now();
-
+    //
     if (_lastSpeedUpdate != null) {
       final deltaTime = now.difference(_lastSpeedUpdate!).inSeconds;
       if (deltaTime > 0) {
