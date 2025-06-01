@@ -165,6 +165,42 @@ class BleService {
   static Stream<int> get rpmStream =>
       _rpmController.stream; // Stream para coleta do RPM
 
+  // // UUIDs do serviço e características OBD (definidos pelo dispositivo)
+  // static final Guid serviceUUID = Guid(
+  //   '0000fff0-0000-1000-8000-00805f9b34fb',
+  // ); // Serviço OBD-II
+  // static final Guid notifyUUID = Guid('0000fff1-0000-1000-8000-00805f9b34fb');
+  // static final Guid writeUUID = Guid('0000fff2-0000-1000-8000-00805f9b34fb');
+  //
+  // // Configura a comunicação com o dispositivo OBD (descobre serviços e características)
+  // static Future<void> setupObdCommunication() async {
+  //   final device = AppSettings.connectedDevice;
+  //   if (device == null) return; // Se não há dispositivo conectado, retorna
+  //
+  //   // Descobre serviços oferecidos pelo dispositivo
+  //   List<BluetoothService> services = await device.discoverServices();
+  //
+  //   // Busca serviço OBD pelo UUID
+  //   final obdService = services.firstWhere(
+  //         (s) => s.uuid == serviceUUID,
+  //     orElse: () => throw Exception('Serviço OBD não encontrado'),
+  //   );
+  //
+  //   // Busca características de notificação e escrita dentro do serviço
+  //   _notifyCharacteristic = obdService.characteristics.firstWhere(
+  //         (c) => c.uuid == notifyUUID,
+  //   );
+  //   _writeCharacteristic = obdService.characteristics.firstWhere(
+  //         (c) => c.uuid == writeUUID,
+  //   );
+  //
+  //   // Ativa notificações para receber dados do dispositivo
+  //   await _notifyCharacteristic!.setNotifyValue(true);
+  //
+  //   // Escuta os dados recebidos via notificação
+  //   _notifyCharacteristic!.value.listen(_onDataReceived);
+  // }
+
   // Setup OBD buscando UUIDs automaticamente
   static Future<void> setupObdCommunication() async {
     final device = AppSettings.connectedDevice;

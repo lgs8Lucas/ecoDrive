@@ -14,8 +14,9 @@ import 'package:ecoDrive/models/eco_drive_model.dart';
 import '../widgets/carbon_emission_widget.dart';
 import 'home_page.dart';
 
+// Controller
 final EcoDriveController controller = EcoDriveController();
-
+// Classe para a página EcoDrive
 class EcoDrivePage extends StatefulWidget {
   final String combustivel; // variável que vai receber o valor
   final VoidCallback onReturn; // Callback para atualizar ao sair
@@ -27,7 +28,7 @@ class EcoDrivePage extends StatefulWidget {
   @override
   State<EcoDrivePage> createState() => _EcoDrivePageState();
 }
-
+// Classe do estado do EcoDrivePage
 class _EcoDrivePageState extends State<EcoDrivePage> {
   Timer? _timer;
   BluetoothDevice? _device;
