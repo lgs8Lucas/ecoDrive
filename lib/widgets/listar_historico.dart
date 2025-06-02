@@ -157,5 +157,13 @@ Future<List<Widget>> listarHistorico(
 }
 
 String formatTempoViagem(int duration) {
-  return "$duration s";
+  String s = '';
+  int hours = duration ~/ 3600;
+  if (hours > 0)s += '$hours h ';
+  int seconds = duration % 3600;
+  int minutes = seconds ~/ 60;
+  if (minutes > 0) s += '$minutes min ';
+  seconds = seconds % 60;
+  if (seconds > 0) s += '$seconds s';
+  return s;
 }

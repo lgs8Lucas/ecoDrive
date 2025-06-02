@@ -75,6 +75,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
         _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
       });
     });
+
   }
 
   // Função para resetar os valores
@@ -133,9 +134,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
 
     // Escuta o stream de consumo de combustível do BleService
     _fuelSubscription = BleService.fuelRateStream.listen((fuel) {
-      print('Combustível recebido: $fuel');
+      print('taxa de Combustível recebido: $fuel');
       setState(() {
-        _totalFuel = fuel;
+        _fuelConsumed += fuel; // Acumula o combustível consumido
       });
     });
 

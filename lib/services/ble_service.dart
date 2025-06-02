@@ -3,11 +3,10 @@ import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:convert';
 
-
 class BleService {
   static final _bluetoothStateController = StreamController<bool>.broadcast();
   static final _odbConnectionStateController =
-  StreamController<bool>.broadcast();
+      StreamController<bool>.broadcast();
 
   static Stream<bool> get bluetoothStateStream =>
       _bluetoothStateController.stream;
@@ -21,28 +20,49 @@ class BleService {
 
   static final List<Map<String, String>> devices = [];
   static final StreamController<List<Map<String, String>>>
-  _deviceStreamController = StreamController<List<Map<String, String>>>.broadcast();
+  _deviceStreamController =
+      StreamController<List<Map<String, String>>>.broadcast();
+
   static Stream<List<Map<String, String>>> get deviceStream =>
       _deviceStreamController.stream;
 
   static final _distanceStreamController = StreamController<double>.broadcast();
+
   static Stream<double> get distanceStream => _distanceStreamController.stream;
   static int _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
 
-  static int _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch; // Timestamp do último consumo de combustível
-  static final _fuelLevelController = StreamController<double>.broadcast(); // Stream para o nível de combustível
-  static Stream<double> get fuelLevelStream => _fuelLevelController.stream; // Stream para o nível de combustível
-  static final _fuelStreamController = StreamController<double>.broadcast(); // Stream para o consumo de combustível
-  static Stream<double> get fuelStream => _fuelStreamController.stream; // Stream para o consumo de combustível
+  static int _lastFuelTimestamp =
+      DateTime.now()
+          .millisecondsSinceEpoch; // Timestamp do último consumo de combustível
+  static final _fuelLevelController =
+      StreamController<
+        double
+      >.broadcast(); // Stream para o nível de combustível
+  static Stream<double> get fuelLevelStream =>
+      _fuelLevelController.stream; // Stream para o nível de combustível
+  static final _fuelStreamController =
+      StreamController<
+        double
+      >.broadcast(); // Stream para o consumo de combustível
+  static Stream<double> get fuelStream =>
+      _fuelStreamController.stream; // Stream para o consumo de combustível
 
-  static final StreamController<double> _fuelRateController = StreamController<double>.broadcast(); // controlador para o consumo instantâneo de combustível
-  static Stream<double> get fuelRateStream => _fuelRateController.stream; // Stream para o consumo instantâneo de combustível
+  static final StreamController<double> _fuelRateController =
+      StreamController<
+        double
+      >.broadcast(); // controlador para o consumo instantâneo de combustível
+  static Stream<double> get fuelRateStream =>
+      _fuelRateController
+          .stream; // Stream para o consumo instantâneo de combustível
 
-  static final StreamController<double> _speedStreamController = StreamController.broadcast();
+  static final StreamController<double> _speedStreamController =
+      StreamController.broadcast();
+
   static Stream<double> get speedStream => _speedStreamController.stream;
 
   static double _totalDistance = 0.0; // Distância acumulada em km
-  static double _totalFuelConsumed = 0.0; // Total de combustível consumido em litros
+  static double _totalFuelConsumed =
+      0.0; // Total de combustível consumido em litros
   static double _lastSpeed = 0.0; // Última velocidade registrada (em km/h)
   static DateTime? _lastSpeedUpdate;
 
@@ -70,12 +90,12 @@ class BleService {
     _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       for (ScanResult r in results) {
         if (!devices.any(
-              (device) => device['id'] == r.device.remoteId.toString(),
+          (device) => device['id'] == r.device.remoteId.toString(),
         )) {
           devices.add({
             'id': r.device.remoteId.toString(),
             'name':
-            r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
+                r.device.name.isEmpty ? 'Dispositivo sem Nome' : r.device.name,
           });
           _deviceStreamController.add(List<Map<String, String>>.from(devices));
         }
@@ -159,7 +179,7 @@ class BleService {
   static BluetoothCharacteristic? _notifyCharacteristic;
 
   static final StreamController<int> _rpmController =
-  StreamController<int>.broadcast();
+      StreamController<int>.broadcast();
 
   // Stream para coleta do RPM
   static Stream<int> get rpmStream =>
@@ -233,7 +253,9 @@ class BleService {
     }
 
     if (notifyChar == null || writeChar == null) {
-      throw Exception('Não foi possível encontrar características Notify e Write no dispositivo');
+      throw Exception(
+        'Não foi possível encontrar características Notify e Write no dispositivo',
+      );
     }
 
     _notifyCharacteristic = notifyChar;
@@ -242,7 +264,9 @@ class BleService {
     await _notifyCharacteristic!.setNotifyValue(true);
     _notifyCharacteristic!.value.listen(_onDataReceived);
 
-    print('Configuração do OBD concluída. Notify: ${_notifyCharacteristic!.uuid}, Write: ${_writeCharacteristic!.uuid}');
+    print(
+      'Configuração do OBD concluída. Notify: ${_notifyCharacteristic!.uuid}, Write: ${_writeCharacteristic!.uuid}',
+    );
   }
 
   // Enviando comandos ao RPM
@@ -280,11 +304,20 @@ class BleService {
     //   }
     // }
 
-    if (response.contains('41 10')) {  // PID do MAF
-      final fuelRateFromMAF = parseFuelRateFromMAF(response); // Função para extrair o consumo de combustível
+    if (response.contains('41 10')) {
+      // PID do MAF
+      final fuelRateFromMAF = parseFuelRateFromMAF(
+        response,
+      ); // Função para extrair o consumo de combustível
       if (fuelRateFromMAF != null) {
-        updateFuelConsumption(fuelRateFromMAF); // Atualiza o consumo usando sua função (mesma lógica que para o consumo direto)
-        _fuelRateController.add(fuelRateFromMAF); // notificar um StreamController, atualizar UI, salvar, etc.
+        updateFuelConsumption(
+          fuelRateFromMAF,
+        ); // Atualiza o consumo usando sua função (mesma lógica que para o consumo direto)
+        _fuelRateController.add(
+          fuelRateFromMAF,
+        ); // notificar um StreamController, atualizar UI, salvar, etc.
+      } else {
+        print("Erro ao calcular o consumo de combustível a partir do MAF");
       }
     }
   }
@@ -309,7 +342,7 @@ class BleService {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final timeElapsed =
         (currentTimestamp - _lastDistanceTimestamp) /
-            3600000.0; // Tempo em horas
+        3600000.0; // Tempo em horas
 
     final distance =
         _lastSpeed * timeElapsed; // Distância percorrida no intervalo
@@ -391,6 +424,7 @@ class BleService {
     final command = utf8.encode('0110\r'); // PID 01 10 = MAF
     await _writeCharacteristic!.write(command, withoutResponse: true);
   }
+
   // Traduzir a resposta
   static double? parseFuelRateFromMAF(String response) {
     try {
@@ -409,7 +443,9 @@ class BleService {
 
         return fuelRateLph;
       }
-    } catch (_) {}
+    } catch (e) {
+      print("Erro ao interpretar a resposta do MAF: $e");
+    }
     return null;
   }
 
