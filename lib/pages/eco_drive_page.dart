@@ -11,6 +11,7 @@ import '../services/ble_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
+import '../shared/app_settings.dart';
 import '../widgets/carbon_emission_widget.dart';
 import 'home_page.dart';
 
@@ -69,7 +70,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     // Supondo que você já esteja escutando fuelStream:
     _fuelSubscription = BleService.fuelStream.listen((fuel) {
       print('Combustível recebido: $fuel');
-
+      AppSettings.logService?.writeLog(
+        'combustível recebido: $fuel',
+      );
       setState(() {
         _totalFuel = fuel;
         _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
@@ -135,6 +138,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     // Escuta o stream de consumo de combustível do BleService
     _fuelSubscription = BleService.fuelRateStream.listen((fuel) {
       print('taxa de Combustível recebido: $fuel');
+      AppSettings.logService?.writeLog(
+        'taxa de Combustível: $fuel',
+      );
       setState(() {
         _fuelConsumed += fuel; // Acumula o combustível consumido
       });

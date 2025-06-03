@@ -1,4 +1,5 @@
 import 'package:ecoDrive/services/ble_service.dart';
+import 'package:ecoDrive/services/log_service.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/pages/home_page.dart';
@@ -18,6 +19,10 @@ class App extends StatelessWidget{
   Widget build(BuildContext context){
     AppSettings.screenH = MediaQuery.of(context).size.height;
     AppSettings.screenW = MediaQuery.of(context).size.width;
+    AppSettings.logService = LogService();
+    AppSettings.logService?.initializeLogFile();
+
+
     return MaterialApp(
       title: 'EcoDrive',
       debugShowCheckedModeBanner: false,

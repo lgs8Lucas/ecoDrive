@@ -281,6 +281,9 @@ class BleService {
   static void _onDataReceived(List<int> data) {
     final response = String.fromCharCodes(data);
     print('Resposta OBD: $response');
+    AppSettings.logService?.writeLog(
+      'Resposta OBD: $response',
+    ); // Log da resposta recebida);
 
     // Extraia o RPM ou Velocidade com base no comando enviado
     if (response.contains('41 0C')) {
@@ -318,6 +321,9 @@ class BleService {
         ); // notificar um StreamController, atualizar UI, salvar, etc.
       } else {
         print("Erro ao calcular o consumo de combustível a partir do MAF");
+        AppSettings.logService?.writeLog(
+          'erro ao calcular o consumo de combustível a partir do MAF',
+        );
       }
     }
   }
@@ -445,6 +451,9 @@ class BleService {
       }
     } catch (e) {
       print("Erro ao interpretar a resposta do MAF: $e");
+      AppSettings.logService?.writeLog(
+        'Erro ao interpretar a resposta do MAF: $e',
+      );
     }
     return null;
   }
