@@ -158,14 +158,17 @@ class BleService {
   // Desconecta do dispositivo
   static void dispose() {
     _bluetoothStateSubscription?.cancel();
-    stopScanning();
+    _scanSubscription?.cancel();
     _cancelDeviceStateSubscription();
+
     _bluetoothStateController.close();
     _odbConnectionStateController.close();
     _rpmController.close();
     _fuelStreamController.close();
     _distanceStreamController.close();
     _fuelLevelController.close();
+    _fuelRateController.close();
+    _speedStreamController.close();
   }
 
   // Verificar se o Bluetooth está ligado
@@ -452,7 +455,6 @@ class BleService {
   // Atualizar o consumo de combustível
   static void updateFuelConsumption(double fuelRate) {
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (_lastFuelTimestamp == 0) _lastFuelTimestamp = now;
 
     final elapsedSeconds = (now - _lastFuelTimestamp) / 1000.0;
     _lastFuelTimestamp = now;
@@ -488,8 +490,11 @@ class BleService {
     _lastFuelTimestamp = DateTime.now().millisecondsSinceEpoch;
     _lastDistanceTimestamp = DateTime.now().millisecondsSinceEpoch;
     _lastSpeed = 0.0;
+    _lastSpeedUpdate = null;
+
     _distanceStreamController.add(_totalDistance);
     _fuelStreamController.add(_totalFuelConsumed);
-    _lastSpeedUpdate = null;
+    _fuelRateController.add(0.0);
+    _speedStreamController.add(0.0);
   }
 }

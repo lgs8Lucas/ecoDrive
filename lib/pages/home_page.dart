@@ -1,4 +1,4 @@
-import 'package:ecoDrive/pages/viagem_page.dart';
+import 'package:ecoDrive/pages/trip_page.dart';
 import 'package:flutter/material.dart';
 import '../shared/app_colors.dart';
 import '../widgets/bluetooth_status_widget.dart';

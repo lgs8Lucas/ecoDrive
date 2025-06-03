@@ -59,23 +59,11 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   // Função para resetar os valores
   @override
   void initState() {
-
     super.initState();
     _initRpmListener();
     _initInclinationListener();
 
-    _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
-
-    // Supondo que você já esteja escutando fuelStream:
-    _fuelSubscription = BleService.fuelStream.listen((fuel) {
-      print('Combustível recebido: $fuel');
-
-      setState(() {
-        _totalFuel = fuel;
-        _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _totalFuel);
-      });
-    });
-
+    _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _fuelConsumed);
   }
 
   // Função para resetar os valores
@@ -89,7 +77,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       _currentInclination = 0.0;
       _zeroInclination = 0.0;
       _totalFuel = 0.0;
-      _currentDistance = 0.0;
       _tipTile = "Bem-vindo!";
       _tipMessage = "Comece a dirigir para ver dicas!";
       _tipType = "good";
@@ -259,7 +246,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   CircularInfoWidget(
                     icon: Icons.oil_barrel,
                     label: "Consumo de Combustivel",
-                    value: _totalFuel,
+                    value: _fuelConsumed,
                     unit: "L",
                   ),
                 ],
@@ -313,7 +300,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                     context: context,
                     menssage: "Deseja realmente salvar esta viagem?",
                     function: () async {
-                      double consumoCombustivelODB = _totalFuel;
+                      double consumoCombustivelODB = _fuelConsumed;
                       double emissaoCarbono = await controller.calcularEmissaoCarbono(
                         widget.combustivel,
                         consumoCombustivelODB,
