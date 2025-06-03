@@ -1,4 +1,4 @@
-import 'package:ecoDrive/pages/viagem_page.dart';
+import 'package:ecoDrive/pages/trip_page.dart';
 import 'package:ecoDrive/shared/app_colors.dart';
 import 'package:ecoDrive/shared/app_styles.dart';
 import 'package:flutter/material.dart';

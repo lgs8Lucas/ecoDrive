@@ -61,7 +61,7 @@ class EmissaoCarbonoCard extends StatelessWidget {
               Text(
                 "$valor $unidade",
                 style: TextStyle(
-                  fontSize: 19,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: iconColor,
                 ),
@@ -71,7 +71,7 @@ class EmissaoCarbonoCard extends StatelessWidget {
           const Spacer(),
           // Ícone à direita
           Container(
-            padding: const EdgeInsets.all(1),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
@@ -79,7 +79,7 @@ class EmissaoCarbonoCard extends StatelessWidget {
             child: Icon(
               iconData,
               color: iconColor,
-              size: 30,
+              size: 40,
             ),
           ),
         ],
