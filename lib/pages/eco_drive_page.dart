@@ -300,10 +300,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                     context: context,
                     menssage: "Deseja realmente salvar esta viagem?",
                     function: () async {
-                      double consumoCombustivelODB = _fuelConsumed;
                       double emissaoCarbono = await controller.calcularEmissaoCarbono(
                         widget.combustivel,
-                        consumoCombustivelODB,
+                        _fuelConsumed,
                       );
 
                       final viagem = EcoDriveModel(
@@ -313,7 +312,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                         dataViagem: DateTime.now(),
                         tipoCombustivel: widget.combustivel,
                         quilometragemRodada: _currentDistance,
-                        consumoCombustivel: consumoCombustivelODB,
+                        consumoCombustivel: _fuelConsumed,
                         emissaoCarbono: emissaoCarbono,
                         avaliacaoViagem: "Excelente",
                       );
