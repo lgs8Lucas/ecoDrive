@@ -105,15 +105,12 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           _tipTile = "Atenção!";
           _tipMessage = "Reduza as rotações para economizar combustível!";
           _tipType = 'bad';
+          _timeOnRedRPM++;
         } else {
           _tipTile = "Ótima direção!";
           _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
           _tipType = 'good';
-        }
-        if (_currentRpm <= _greenRpm) {
           _timeOnGreenRPM++;
-        } else{
-          _timeOnRedRPM++;
         }
       });
     });
@@ -319,7 +316,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                       );
 
                       int greenTime = (_timeOnGreenRPM * _allTime) ~/ (_timeOnGreenRPM + _timeOnRedRPM);
-
+                      AppSettings.logService?.writeLog(
+                        'Linha 320: greenTime: $greenTime, allTime: $_allTime, timeOnGreenRPM: $_timeOnGreenRPM, timeOnRedRPM: $_timeOnRedRPM',
+                      );
                       final viagem = EcoDriveModel(
                         nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
                         duracaoViagem: _allTime,
