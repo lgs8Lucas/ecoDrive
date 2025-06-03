@@ -63,7 +63,7 @@ Future<List<Widget>> listarHistorico(
                     style: AppStyles.simpleText.copyWith(fontSize: 14),
                   ),
                   Text(
-                    "${viagem.quilometragemRodada} km",
+                    "${viagem.quilometragemRodada.toStringAsFixed(2)} km",
                     style: AppStyles.simpleText.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
