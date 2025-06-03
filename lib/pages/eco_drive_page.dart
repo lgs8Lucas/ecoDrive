@@ -128,7 +128,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       unawaited(AppSettings.logService?.writeLog('taxa de Combustível: $fuel'));
 
       setState(() {
-        _fuelConsumed += fuel; // Acumula o combustível consumido
+        _fuelConsumed += fuel;
+        _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _fuelConsumed);
       });
     });
 
@@ -155,11 +156,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       int greenRpm = 2500 + ((angle - _zeroInclination) * 10).toInt();
       setState(() {
         _currentInclination = angle;
-        _greenRpm =
-            greenRpm > 2500
-                ? greenRpm
-                : 2500; // Ajusta o RPM verde com base na inclinação
+        int adjustedRpm = 2500 + ((angle - _zeroInclination) * 10).toInt();
+        _greenRpm = adjustedRpm.clamp(2500, 3500); // entre 2500 e 3500
       });
+
     });
   }
 
@@ -222,6 +222,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
               ),
               const SizedBox(height: 2),
               FutureBuilder<double>(
+                key: ValueKey(_fuelConsumed),
                 future: _emissaoCarbonoFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -266,12 +267,14 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   ),
                   const SizedBox(width: 30),
                   FilledButton(
-                    onPressed:
-                        () => {
-                          setState(() {
-                            _zeroInclination = _currentInclination;
-                          }),
-                        },
+                    onPressed: () {
+                      setState(() {
+                        _zeroInclination = _currentInclination;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Inclinação zero definida!')),
+                      );
+                    },
                     child: const Text('Definir Inclinação Zero'),
                   ),
                 ],
