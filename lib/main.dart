@@ -11,6 +11,9 @@ import 'package:sqflite/sqflite.dart';
 void main()  async  {
   BleService.initialize(); // <- ESSENCIAL para o stream funcionar
   WidgetsFlutterBinding.ensureInitialized();
+  AppSettings.logService = LogService();
+  await AppSettings.logService?.initializeLogFile();
+  await AppSettings.logService?.writeLog('Aplicativo iniciado');
   runApp(App());
 }
 
@@ -19,8 +22,7 @@ class App extends StatelessWidget{
   Widget build(BuildContext context){
     AppSettings.screenH = MediaQuery.of(context).size.height;
     AppSettings.screenW = MediaQuery.of(context).size.width;
-    AppSettings.logService = LogService();
-    AppSettings.logService?.initializeLogFile();
+
 
 
     return MaterialApp(
