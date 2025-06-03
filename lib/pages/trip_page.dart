@@ -1,3 +1,4 @@
+import 'package:ecoDrive/widgets/listar_historico.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoDrive/controllers/eco_drive_controller.dart';
 import 'package:ecoDrive/models/eco_drive_model.dart';
@@ -74,7 +75,7 @@ class ViagemPage extends StatelessWidget {
                           LinhaFormatada("📝Nome da Viagem", viagem.nomeViagem),
                           LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
                           LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
-                          LinhaFormatada("⏱ Duração da viagem", "${viagem.duracaoViagem.toStringAsFixed(2)} s"),
+                          LinhaFormatada("⏱ Duração da viagem", "${formatTempoViagem(viagem.duracaoViagem)}"),
                           LinhaFormatada("⏱ Tempo de RPM Ideal", "${viagem.tempoRpmVerde.toString()} s"),
                           LinhaFormatada("📊 Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
                           LinhaFormatada("📊 Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
@@ -133,6 +134,22 @@ Widget LinhaFormatada(String titulo, String valor) {
       ],
     ),
   );
+
+  String formatTempoViagem(int duration) {
+    String s = '';
+    int hours = duration ~/ 3600;
+    if (hours > 0)s += '$hours h ';
+    int seconds = duration % 3600;
+    int minutes = seconds ~/ 60;
+    if (minutes > 0) s += '$minutes min ';
+    seconds = seconds % 60;
+    if (seconds > 0) s += '$seconds s';
+    return s;
+  }
+
+
 }
+
+
 
 
