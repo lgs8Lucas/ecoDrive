@@ -114,7 +114,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
 
     // Escuta o stream de distância do BleService
     _distanceSubscription = BleService.distanceStream.listen((distance) {
-      print('Distância recebida: $distance');
+      //App_log
+      unawaited(AppSettings.logService?.writeLog('taxa de Combustível: $distance'));
+
       setState(() {
         _currentDistance = distance;
       });
@@ -122,10 +124,9 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
 
     // Escuta o stream de consumo de combustível do BleService
     _fuelSubscription = BleService.fuelRateStream.listen((fuel) {
-      print('taxa de Combustível recebido: $fuel');
-      AppSettings.logService?.writeLog(
-        'taxa de Combustível: $fuel',
-      );
+      //App_log
+      unawaited(AppSettings.logService?.writeLog('taxa de Combustível: $fuel'));
+
       setState(() {
         _fuelConsumed += fuel; // Acumula o combustível consumido
       });

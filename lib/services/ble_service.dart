@@ -283,10 +283,7 @@ class BleService {
   // Recebendo dados
   static void _onDataReceived(List<int> data) {
     final response = String.fromCharCodes(data);
-    print('Resposta OBD: $response');
-    AppSettings.logService?.writeLog(
-      'Resposta OBD: $response',
-    ); // Log da resposta recebida);
+    unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response')); // Log da resposta recebida);
 
     // Extraia o RPM ou Velocidade com base no comando enviado
     if (response.contains('41 0C')) {
@@ -302,13 +299,14 @@ class BleService {
         updateDistance(speed);
       }
     }
-    // if (response.contains('41 5E') || response.contains('41 66')) {
-    //   // PID para consumo instantâneo de combustível
-    //   final fuelRate = _parseFuelRateResponse(response);
-    //   if (fuelRate != null) {
-    //     updateFuelConsumption(fuelRate);
-    //   }
-    // }
+
+    if (response.contains('41 5E') || response.contains('41 66')) {
+       //PID para consumo instantâneo de combustível
+       final fuelRate = _parseFuelRateResponse(response);
+       if (fuelRate != null) {
+         updateFuelConsumption(fuelRate);
+       }
+    }
 
     if (response.contains('41 10')) {
       // PID do MAF
@@ -324,9 +322,7 @@ class BleService {
         ); // notificar um StreamController, atualizar UI, salvar, etc.
       } else {
         print("Erro ao calcular o consumo de combustível a partir do MAF");
-        AppSettings.logService?.writeLog(
-          'erro ao calcular o consumo de combustível a partir do MAF',
-        );
+        unawaited(AppSettings.logService?.writeLog('erro ao calcular o consumo de combustível a partir do MAF'));
       }
     }
   }
@@ -391,41 +387,27 @@ class BleService {
   }
 
   // // Enviar comando para obter o consumo instantâneo de combustível
-  // static Future<void> requestFuelRate() async {
-  //   if (_writeCharacteristic == null) return;
-  //   final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
-  //   await _writeCharacteristic!.write(command, withoutResponse: true);
-  // }
+  static Future<void> requestFuelRate() async {
+    if (_writeCharacteristic == null) return;
+    final command = '015E\r'.codeUnits; // PID para consumo instantâneo de combustível
+    await _writeCharacteristic!.write(command, withoutResponse: true);
+  }
 
-  // // Traduzir a resposta
-  // static double? _parseFuelRateResponse(String response) {
-  //   try {
-  //     final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
-  //     final bytes = clean.split(' ');
-  //
-  //     if (bytes.length >= 4 &&
-  //         (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
-  //       final A = int.parse(bytes[2], radix: 16);
-  //       final B = int.parse(bytes[3], radix: 16);
-  //       return ((A * 256) + B) / 20.0; // Em litros por hora
-  //     }
-  //   } catch (_) {}
-  //   return null;
-  // }
+   // Traduzir a resposta
+   static double? _parseFuelRateResponse(String response) {
+     try {
+       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+       final bytes = clean.split(' ');
 
-  // // Atualizar o consumo de combustível
-  // static void updateFuelConsumption(double fuelRate) {
-  //   final now = DateTime.now().millisecondsSinceEpoch;
-  //   final elapsedSeconds = (now - _lastFuelTimestamp) / 1000; // segundos
-  //   _lastFuelTimestamp = now;
-  //
-  //   // Converte g/s * tempo = g → depois para litros (assumindo densidade média de 0.75 kg/L)
-  //   final fuelConsumedInLiters = ((fuelRate * elapsedSeconds) / 1000.0) / 0.75;
-  //
-  //   _totalFuelConsumed += fuelConsumedInLiters;
-  //
-  //   _fuelStreamController.add(_totalFuelConsumed);
-  // }
+       if (bytes.length >= 4 &&
+           (bytes[0] == '41' && (bytes[1] == '5E' || bytes[1] == '66'))) {
+         final A = int.parse(bytes[2], radix: 16);
+         final B = int.parse(bytes[3], radix: 16);
+         return ((A * 256) + B) / 20.0; // Em litros por hora
+       }
+     } catch (_) {}
+     return null;
+   }
 
   // Enviar comando para obter o consumo instantâneo de combustível com MFA fluxo de ar em gramas por segundo (g/s)
   static Future<void> requestFuelRateViaMAF() async {
@@ -454,9 +436,7 @@ class BleService {
       }
     } catch (e) {
       print("Erro ao interpretar a resposta do MAF: $e");
-      AppSettings.logService?.writeLog(
-        'Erro ao interpretar a resposta do MAF: $e',
-      );
+      unawaited(AppSettings.logService?.writeLog('Erro ao interpretar a resposta do MAF: $e'));
     }
     return null;
   }
