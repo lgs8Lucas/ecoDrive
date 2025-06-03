@@ -42,6 +42,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   String _tipType = "good";
   int _allTime = 0;
   int _timeOnGreenRPM = 0;
+  int _timeOnRedRPM = 0;
   int _greenRpm = 2500; // RPM verde padrão
   double _zeroInclination = 0.0; // Inclinação zero para referência
 
@@ -110,6 +111,11 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
           _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
           _tipType = 'good';
         }
+        if (_currentRpm <= _greenRpm) {
+          _timeOnGreenRPM++;
+        } else{
+          _timeOnRedRPM++;
+        }
       });
     });
 
@@ -142,9 +148,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       await Future.delayed(Duration(milliseconds: 300));
       await BleService.requestSpeed();
       _allTime++;
-      if (_currentRpm <= _greenRpm) {
-        _timeOnGreenRPM++;
-      }
+
     });
   }
 
@@ -314,16 +318,18 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                         _fuelConsumed,
                       );
 
+                      int greenTime = (_timeOnGreenRPM * _allTime) ~/ (_timeOnGreenRPM + _timeOnRedRPM);
+
                       final viagem = EcoDriveModel(
                         nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
                         duracaoViagem: _allTime,
-                        tempoRpmVerde: _timeOnGreenRPM,
+                        tempoRpmVerde: greenTime,
                         dataViagem: DateTime.now(),
                         tipoCombustivel: widget.combustivel,
                         quilometragemRodada: _currentDistance,
                         consumoCombustivel: _fuelConsumed,
                         emissaoCarbono: emissaoCarbono,
-                        avaliacaoViagem: "Excelente",
+                        avaliacaoViagem: greenTime > (_allTime ~/ 2) ? 'Excelente' : 'Precisa Melhorar',
                       );
 
                       await controller.salvarViagem(viagem);
