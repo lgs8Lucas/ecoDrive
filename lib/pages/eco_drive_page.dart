@@ -51,7 +51,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   int _currentRpm = 0;
   double _fuelConsumed = 0.0;
   double _currentInclination = 0.0;
-  double _fuelRateInstantaneous = 0.0;
 
   StreamSubscription<double>? _distanceSubscription;
   StreamSubscription<double>? _fuelSubscription;
@@ -116,7 +115,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     // Escuta o stream de distância do BleService
     _distanceSubscription = BleService.distanceStream.listen((distance) {
       //App_log
-      unawaited(AppSettings.logService?.writeLog('taxa de Combustível: $distance'));
+      unawaited(AppSettings.logService?.writeLog('Linha 119: distancia: $distance'));
 
       setState(() {
         _currentDistance = distance;
@@ -126,10 +125,11 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     // Escuta o stream de consumo de combustível do BleService
     _fuelSubscription = BleService.fuelRateStream.listen((totalFuel) {
       //App_log
-      unawaited(AppSettings.logService?.writeLog('taxa de Combustível: $totalFuel'));
+      unawaited(AppSettings.logService?.writeLog('Linha 129: taxa de Combustível: $totalFuel'));
 
       setState(() {
         _fuelConsumed = totalFuel;  // total acumulado vindo do serviço
+        unawaited(AppSettings.logService?.writeLog('Linha 133: taxa de Combustível variavel: $_fuelConsumed'));
         _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(widget.combustivel, _fuelConsumed);
       });
     });
@@ -253,7 +253,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   CircularInfoWidget(
                     icon: Icons.oil_barrel,
                     label: "Consumo de Combustivel",
-                    value: _fuelRateInstantaneous,
+                    value: _fuelConsumed,
                     unit: "L/h",
                   ),
                 ],

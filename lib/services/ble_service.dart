@@ -199,6 +199,9 @@ class BleService {
 
   // Processamento dos dados recebidos
   static void _onDataReceived(List<int> data) {
+
+    unawaited(AppSettings.logService?.writeLog('Linha 203: data: $data'));
+
     final response = String.fromCharCodes(data);
     unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response'));
 
