@@ -76,7 +76,7 @@ class ViagemPage extends StatelessWidget {
                           LinhaFormatada("⛽ Tipo de combustível", viagem.tipoCombustivel),
                           LinhaFormatada("🛣 Quilometragem rodada", "${viagem.quilometragemRodada.toStringAsFixed(2)} km"),
                           LinhaFormatada("⏱ Duração da viagem", "${formatTempoViagem(viagem.duracaoViagem)}"),
-                          LinhaFormatada("⏱ Tempo de RPM Ideal", "${viagem.tempoRpmVerde.toString()} s"),
+                          LinhaFormatada("⏱ Tempo de RPM Ideal", "${formatTempoViagem(viagem.tempoRpmVerde)}"),
                           LinhaFormatada("📊 Consumo total", "${viagem.consumoCombustivel.toStringAsFixed(2)} L"),
                           LinhaFormatada("📊 Consumo médio", "${consumoMedio.toStringAsFixed(2)} km/L"),
                           LinhaFormatada("🌍 Emissão de carbono", "${viagem.emissaoCarbono.toStringAsFixed(2)} kgCO2"),
