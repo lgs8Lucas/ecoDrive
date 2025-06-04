@@ -224,6 +224,8 @@ class BleService {
             updateSpeed(speed);
           }
         } else if (line.contains('41 5E') || line.contains('41 66')) {
+          print('Resposta do PID 015E/0166: $line'); // ← Log adicionado
+          unawaited(AppSettings.logService?.writeLog('Linha 228 Resposta do PID 015E/0166: $line'));
           final fuelRate = _parseFuelRateResponse(line);
           if (fuelRate != null) {
             updateFuelConsumption(fuelRate);
@@ -295,6 +297,8 @@ class BleService {
       final bytes = clean.split(' ');
       if (bytes.length >= 3 && bytes[0] == '41' && bytes[1] == '0D') {
         final speed = int.parse(bytes[2], radix: 16);
+        print('Velocidade parseada: $speed km/h'); // ← Log adicionado
+        unawaited(AppSettings.logService?.writeLog('Linha 299: Velocidade parseada: $speed km/h'));
         return speed.toDouble();
       }
     } catch (_) {}
