@@ -310,10 +310,16 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                         widget.combustivel,
                         _fuelConsumed,
                       );
-
-                      int greenTime = (_timeOnGreenRPM * _allTime) ~/ (_timeOnGreenRPM + _timeOnRedRPM);
+                      int greenTime;
+                      try{
+                        greenTime = (_timeOnGreenRPM * _allTime) ~/ (_timeOnGreenRPM + _timeOnRedRPM);
+                      } catch
+                      (e) {
+                        greenTime = 0; // Se ocorrer um erro, define como 0
+                        print("Erro ao calcular greenTime: $e");
+                      }
                       final viagem = EcoDriveModel(
-                        nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
+                        nomeViagem: "Viagem Padrão",
                         duracaoViagem: _allTime,
                         tempoRpmVerde: greenTime,
                         dataViagem: DateTime.now(),
