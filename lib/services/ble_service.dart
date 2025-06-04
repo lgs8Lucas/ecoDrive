@@ -184,6 +184,8 @@ class BleService {
     _notifyCharacteristic!.value.listen(_onDataReceived);
 
     print('Configuração do OBD concluída. Notify: ${_notifyCharacteristic!.uuid}, Write: ${_writeCharacteristic!.uuid}');
+
+    await checkSupportedPids();
   }
 
   // Envia comando OBD genérico
@@ -196,10 +198,69 @@ class BleService {
   }
 
   //Envio comandos específicos usando o método genérico
+
   static Future<void> requestRpm() => requestPid('010C');
   static Future<void> requestSpeed() => requestPid('010D');
   static Future<void> requestFuelRate() => requestPid('015E');
   static Future<void> requestFuelRateViaMAF() => requestPid('0110');
+
+  static final Set<String> _supportedPids = {};
+
+  static Future<void> checkSupportedPids() async {
+    if (_writeCharacteristic == null) return;
+
+    final completer = Completer<String>();
+
+    late StreamSubscription<List<int>> subscription;
+
+    subscription = _notifyCharacteristic!.value.listen((data) {
+      final response = String.fromCharCodes(data).trim();
+      if (response.contains('41 00')) {
+        completer.complete(response);
+      }
+    });
+
+    await _notifyCharacteristic!.setNotifyValue(true);
+
+    final command = utf8.encode('0100\r');
+    await _writeCharacteristic!.write(command, withoutResponse: true);
+
+    final response = await completer.future.timeout(
+        const Duration(seconds: 2), onTimeout: () {
+      subscription.cancel();
+      return '';
+    });
+
+    await subscription.cancel();
+
+    if (response.isEmpty) return;
+
+    _parseSupportedPids(response);
+  }
+
+  static void _parseSupportedPids(String response) {
+    final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+    final bytes = clean.split(' ');
+
+    if (bytes.length < 6) return;
+
+    final supportedBytes = bytes.sublist(2, 6);
+
+    for (int i = 0; i < supportedBytes.length; i++) {
+      final byte = int.parse(supportedBytes[i], radix: 16);
+      for (int bit = 0; bit < 8; bit++) {
+        if ((byte & (1 << (7 - bit))) != 0) {
+          final pidNum = i * 8 + bit + 1;
+          final pidHex = pidNum.toRadixString(16).padLeft(2, '0').toUpperCase();
+          _supportedPids.add('01$pidHex');
+        }
+      }
+    }
+
+    print('PIDs suportados: $_supportedPids');
+    unawaited(AppSettings.logService?.writeLog('PIDs suportados: $_supportedPids'));
+  }
+
 
   // Processamento dos dados recebidos
   static String _responseBuffer = '';
