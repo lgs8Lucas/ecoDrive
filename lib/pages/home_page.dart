@@ -1,11 +1,14 @@
 import 'package:ecoDrive/pages/trip_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import '../shared/app_colors.dart';
 import '../widgets/bluetooth_status_widget.dart';
+import '../widgets/confirmDialog.dart';
 import '../widgets/faq_dialog.dart';
 import '../widgets/start_viagem.dart';
 import '../widgets/listar_historico.dart';
 import 'eco_drive_page.dart';
+import 'eco_drive_simulated_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -42,6 +45,11 @@ class _HomePageState extends State<HomePage> {
       barrierColor: Colors.black.withOpacity(0.3),
       builder: (context) => const FAQDialog(),
     );
+  }
+
+  Future<bool> _isOBDConnected() async {
+    List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
+    return devices.isNotEmpty;
   }
 
   @override
@@ -113,6 +121,25 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          bool simule = false;
+          bool conectado = await _isOBDConnected();
+          // Se o usuário não estiver conectado ao ODB, exibe um alerta de que a viagem será simulada
+          if (!conectado) {
+            await confirmDialog(
+              context: context,
+              menssage:
+                  'O dispositivo OBD2 não está conectado. Deseja continuar com uma simulação?',
+              function: () async {
+                simule = true; // Inicia viagem simulada
+              },
+            );
+          }
+
+          // Se o usuário não confirmou a simulação, não inicia a viagem
+          if (!simule && !conectado) {
+            return; // Não inicia a viagem se não estiver conectado e não tiver confirmado a simulação
+          }
+
           final combustivel = await iniciarViagem(
             context: context,
             menssage: 'Informe o tipo de combustível que está utilizando?',
@@ -123,14 +150,24 @@ class _HomePageState extends State<HomePage> {
               context,
               MaterialPageRoute(
                 builder:
-                    (context) => EcoDrivePage(
-                      combustivel: combustivel,
-                      onReturn: () {
-                        setState(() {
-                          _loadHistorico(); // Atualiza a lista de histórico ao voltar
-                        });
-                      },
-                    ),
+                    (context) =>
+                        conectado
+                            ? EcoDrivePage(
+                              combustivel: combustivel,
+                              onReturn: () {
+                                setState(() {
+                                  _loadHistorico(); // Atualiza a lista de histórico ao voltar
+                                });
+                              },
+                            )
+                            : EcoDriveSimulatedPage(
+                              combustivel: combustivel,
+                              onReturn: () {
+                                setState(() {
+                                  _loadHistorico(); // Atualiza a lista de histórico ao voltar
+                                });
+                              },
+                            ),
               ),
             );
           }
