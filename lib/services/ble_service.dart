@@ -251,6 +251,8 @@ class BleService {
       '010D', // Speed
       '015E', // Fuel Rate
       '0110', // Fuel Rate via MAF
+      '010B', // MAP
+      '010F', // IAT
     ]);
 
     while (pidQueue.isNotEmpty) {
@@ -456,20 +458,22 @@ class BleService {
   }
 
   static void updateFuelConsumption(double fuelRate) {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final deltaTime = (now - _lastFuelTimestamp) / 3600000.0; // horas
-
-    if (deltaTime > 0) {
-      final fuelUsed = fuelRate * deltaTime;
-      _totalFuelConsumed += fuelUsed;
-      _fuelStreamController.add(_totalFuelConsumed);
-      unawaited(AppSettings.logService?.writeLog('Linha 338: Combustível consumido: $_totalFuelConsumed litros'));
-    }
-
-    _lastFuelTimestamp = now;
+    // final now = DateTime.now().millisecondsSinceEpoch;
+    // final deltaTime = (now - _lastFuelTimestamp) / 3600000.0; // horas
+    //
+    // if (deltaTime > 0) {
+    //   final fuelUsed = fuelRate * deltaTime;
+    //   _totalFuelConsumed += fuelUsed;
+    //   _fuelStreamController.add(_totalFuelConsumed);
+    //   unawaited(AppSettings.logService?.writeLog('Linha 338: Combustível consumido: $_totalFuelConsumed litros'));
+    // }
+    //
+    // _lastFuelTimestamp = now;
+    _fuelStreamController.add(fuelRate);
   }
 
   static void estimateFuelConsumption() {
+
     if (_lastMAP != null && _lastIAT != null && _lastRPM != null) {
       const ve = 0.85; // Eficiência volumétrica estimada
       const engineDisplacement = 1.6; // em Litros
@@ -485,10 +489,11 @@ class BleService {
 
       // Conversão para taxa de combustível
       final fuelRateLph = (maf * 3600) / (afr * fuelDensity);
-
+      print("FuelRateLph: $fuelRateLph");
       updateFuelConsumption(fuelRateLph);
       _fuelRateController.add(fuelRateLph);
     }
+    print("Tem alguma variável vazia: MAP:$_lastMAP IAT:$_lastIAT RPM: $_lastRPM");
   }
 
   static void reset() {

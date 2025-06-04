@@ -53,7 +53,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
   double _zeroInclination = 0.0; // Inclinação zero para referência
 
   double _totalFuel = 0.0;
-  late Future<double> _emissaoCarbonoFuture;
+  double _emissaoCarbono = 0.0; // Emissão de carbono calculada
   double _currentDistance = 0.0;
   int _currentRpm = 0;
   double _fuelConsumed = 0.0;
@@ -71,10 +71,12 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     _initRpmListener();
     _initInclinationListener();
 
-    _emissaoCarbonoFuture = controller.calcularEmissaoCarbono(
-      widget.combustivel,
-      _totalFuel,
-    );
+    setState(() {
+      _emissaoCarbono = controller.calcularEmissaoCarbonoSincrona(
+        widget.combustivel,
+        _totalFuel,
+      );
+    });
   }
 
   // Função para iniciar o listener do RPM
@@ -138,22 +140,23 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
         AppSettings.logService?.writeLog(
           'Linha 129: taxa de Combustível: $totalFuel',
         ),
-
       );
-
     });
 
     // Solicita DATA a cada X segundo
     _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
       _allTime++;
       setState(() {
-        _totalFuel = _totalFuel + EcoDriveController.calcularConsumoPorSegundo(
-          _currentRpm.toDouble(),
+        _totalFuel += _fuelConsumed / 3600; // Convertendo L/h para L/s
+            EcoDriveController.calcularConsumoPorSegundo(
+              _currentRpm.toDouble(),
+              widget.combustivel,
+            );
+        _emissaoCarbono = controller.calcularEmissaoCarbonoSincrona(
           widget.combustivel,
+          _totalFuel,
         );
       });
-      double temp = EcoDriveController().calcularEmissaoCarbonoSincrona(widget.combustivel, _totalFuel);
-      print("BO de carbono: $temp");
 
       await BleService.requestAllObdData();
     });
@@ -249,22 +252,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 greenEnd: _greenRpm.toDouble(),
               ),
               const SizedBox(height: 2),
-              FutureBuilder<double>(
-                key: ValueKey(_fuelConsumed),
-                future: _emissaoCarbonoFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Erro: ${snapshot.error}');
-                  } else {
-                    return EmissaoCarbonoCard(
-                      valor: snapshot.data!.toStringAsFixed(2),
-                      unidade: "kgCO2",
-                      status: "good", //
-                    );
-                  }
-                },
+              EmissaoCarbonoCard(
+                valor: _emissaoCarbono.toStringAsFixed(2),
+                unidade: "KgCO2",
+                status: "good",
               ),
               const SizedBox(height: 15),
               Row(
@@ -290,7 +281,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   VehicleInclinationVertical(
-                    angle: _currentInclination - _zeroInclination,
+                    angle: -(_currentInclination - _zeroInclination),
                     threshold: _inclinationThreshold,
                   ),
                   const SizedBox(width: 30),
@@ -339,11 +330,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                   context: context,
                   menssage: "Deseja realmente salvar esta viagem?",
                   function: () async {
-                    double emissaoCarbono = await controller
-                        .calcularEmissaoCarbono(
-                          widget.combustivel,
-                          _fuelConsumed,
-                        );
                     int greenTime;
                     try {
                       greenTime =
@@ -360,8 +346,8 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                       dataViagem: DateTime.now(),
                       tipoCombustivel: widget.combustivel,
                       quilometragemRodada: _currentDistance,
-                      consumoCombustivel: _totalFuel,
-                      emissaoCarbono: emissaoCarbono,
+                      consumoCombustivel: _fuelConsumed,
+                      emissaoCarbono: _emissaoCarbono,
                       avaliacaoViagem:
                           greenTime > (_allTime ~/ 2)
                               ? 'Excelente'

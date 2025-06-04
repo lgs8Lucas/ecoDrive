@@ -195,7 +195,7 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   VehicleInclinationVertical(
-                    angle: _currentInclination - _zeroInclination,
+                    angle: -(_currentInclination - _zeroInclination),
                     threshold: _inclinationThreshold,
                   ),
                   const SizedBox(width: 30),

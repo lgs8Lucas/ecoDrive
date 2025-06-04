@@ -27,12 +27,12 @@ class VehicleInclinationVertical extends StatelessWidget {
       // Subida: rotação entre 0 e -45 graus (negativo para girar para cima)
       final clampedAngle = (angle > 45) ? 45 : angle;
       rotationRadians = -clampedAngle * (3.14159265 / 180);
-      color = Colors.green;
+      color = Colors.red;
     } else {
       // Descida: rotação entre 0 e +45 graus (positivo para girar para baixo)
       final clampedAngle = (angle < -45) ? -45 : angle;
       rotationRadians = -clampedAngle * (3.14159265 / 180); // Negativo pois a seta aponta pra cima no 0° e deve rotacionar pra baixo
-      color = Colors.red;
+      color = Colors.green;
     }
 
     return Column(
