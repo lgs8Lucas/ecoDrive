@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:ecoDrive/shared/app_settings.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:convert';
+import 'dart:collection';
 
 class BleService {
   // Streams de estado
@@ -206,52 +207,73 @@ class BleService {
     final response = String.fromCharCodes(data);
 
     if (response.contains('NO DATA')) {
+      unawaited(AppSettings.logService?.writeLog('PID errante: $_lastRequestedPid'));
       print('PID não suportado ou resposta inválida para $_lastRequestedPid');
-      return null; // Ou outra lógica de fallback
+      return;
     }else{
       unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response'));
-    }
 
-    // Pode ser que a resposta tenha múltiplas linhas, parse linha a linha
-    for (var line in response.split('\r')) {
-      if (line.contains('41 0C')) {
-        final rpm = _parseRpmResponse(line);
-        if (rpm != null) _rpmController.add(rpm);
-      } else if (line.contains('41 0D')) {
-        final speed = _parseSpeedResponse(line);
-        if (speed != null) {
-          updateSpeed(speed);
-        }
-      } else if (line.contains('41 5E') || line.contains('41 66')) {
-        final fuelRate = _parseFuelRateResponse(line);
-        if (fuelRate != null) {
-          updateFuelConsumption(fuelRate);
-          _fuelRateController.add(fuelRate);
-          unawaited(AppSettings.logService?.writeLog('Linha 221 Combustivel PID: $fuelRate'));
-        }
-      } else if (line.contains('41 10')) {
-        final fuelRateFromMAF = parseFuelRateFromMAF(line);
-        if (fuelRateFromMAF != null) {
-          updateFuelConsumption(fuelRateFromMAF);
-          _fuelRateController.add(fuelRateFromMAF);
-          unawaited(AppSettings.logService?.writeLog('Linha 228 Combustivel MAF: $fuelRateFromMAF'));
-        } else {
-          print("Erro ao calcular o consumo de combustível a partir do MAF");
-          unawaited(AppSettings.logService?.writeLog('erro ao calcular o consumo de combustível a partir do MAF'));
+      // Pode ser que a resposta tenha múltiplas linhas, parse linha a linha
+      for (var line in response.split('\r')) {
+        if (line.contains('41 0C')) {
+          final rpm = _parseRpmResponse(line);
+          if (rpm != null) _rpmController.add(rpm);
+        } else if (line.contains('41 0D')) {
+          final speed = _parseSpeedResponse(line);
+          if (speed != null) {
+            updateSpeed(speed);
+          }
+        } else if (line.contains('41 5E') || line.contains('41 66')) {
+          final fuelRate = _parseFuelRateResponse(line);
+          if (fuelRate != null) {
+            updateFuelConsumption(fuelRate);
+            _fuelRateController.add(fuelRate);
+            unawaited(AppSettings.logService?.writeLog('Linha 221 Combustivel PID: $fuelRate'));
+          }
+        } else if (line.contains('41 10')) {
+          final fuelRateFromMAF = parseFuelRateFromMAF(line);
+          if (fuelRateFromMAF != null) {
+            updateFuelConsumption(fuelRateFromMAF);
+            _fuelRateController.add(fuelRateFromMAF);
+            unawaited(AppSettings.logService?.writeLog('Linha 228 Combustivel MAF: $fuelRateFromMAF'));
+          } else {
+            print("Erro ao calcular o consumo de combustível a partir do MAF");
+            unawaited(AppSettings.logService?.writeLog('erro ao calcular o consumo de combustível a partir do MAF'));
+          }
         }
       }
     }
   }
 
   static Future<void> requestAllObdData() async {
-    await requestRpm();
-    await Future.delayed(Duration(milliseconds: 100)); // Pequeno delay para não sobrecarregar o OBD
-    await requestSpeed();
-    await Future.delayed(Duration(milliseconds: 100));
-    await requestFuelRate();
-    await Future.delayed(Duration(milliseconds: 500));
-    await requestFuelRateViaMAF();
+    final Queue<String> pidQueue = Queue<String>();
+
+    // Adiciona os PIDs na ordem desejada
+    pidQueue.addAll([
+      '010C', // RPM
+      '010D', // Speed
+      '015E', // Fuel Rate
+      '0110', // Fuel Rate via MAF
+    ]);
+
+    while (pidQueue.isNotEmpty) {
+      final pid = pidQueue.removeFirst();
+      await requestPid(pid);
+
+      // Delay ajustado conforme a criticidade e tempo de resposta do OBD
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
   }
+
+  // static Future<void> requestAllObdData() async {
+  //   await requestRpm();
+  //   await Future.delayed(Duration(milliseconds: 100)); // Pequeno delay para não sobrecarregar o OBD
+  //   await requestSpeed();
+  //   await Future.delayed(Duration(milliseconds: 100));
+  //   await requestFuelRate();
+  //   await Future.delayed(Duration(milliseconds: 500));
+  //   await requestFuelRateViaMAF();
+  // }
 
   // Parsers
   static int? _parseRpmResponse(String response) {
@@ -318,7 +340,7 @@ class BleService {
     final timeElapsed = (currentTimestamp - _lastDistanceTimestamp) / 3600000.0; // em horas
 
     if (_lastSpeed > 0 && timeElapsed > 0) {
-      final distanceDelta = currentSpeed * timeElapsed;
+      final distanceDelta = _lastSpeed * timeElapsed;
       _totalDistance += distanceDelta;
       _distanceStreamController.add(_totalDistance);
       unawaited(AppSettings.logService?.writeLog('Linha 316: Distância acumulada: $_totalDistance km'));

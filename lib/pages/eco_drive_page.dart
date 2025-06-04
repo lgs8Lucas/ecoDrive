@@ -138,7 +138,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
 
     // Solicita DATA a cada 1 segundo
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
       await BleService.requestAllObdData();
       _allTime++;
     });
