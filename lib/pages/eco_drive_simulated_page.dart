@@ -60,7 +60,7 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
       setState(() {
         // Simulação dos valores
         _rpm = (_rpm + 100) % 6000; // Incremento do RPM, voltando a 0 ao atingir 6000
-        _fuelConsumed += 0.1; // Incremento do consumo de combustível
+        _fuelConsumed += EcoDriveController.calcularConsumoPorSegundo(_rpm.toDouble(), widget.combustivel); // Incremento do consumo de combustível
         _distanciaPercorrida += 0.05; // Incremento da distância percorrida
         _allTime++; // Incrementa o tempo total
         _emissaoCarbono = controller.calcularEmissaoCarbonoSincrona(

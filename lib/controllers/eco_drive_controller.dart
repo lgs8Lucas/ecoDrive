@@ -37,9 +37,9 @@ class EcoDriveController {
       return 1.37;
     } else if (combustivel == 'Diesel') {
       return 2.68;
-    } else if (combustivel == 'Flex'){
+    } else if (combustivel == 'Flex') {
       return 1.84;
-    }else{
+    } else {
       return 0.0;
     }
   }
@@ -51,22 +51,69 @@ class EcoDriveController {
       return 1.37;
     } else if (combustivel == 'Diesel') {
       return 2.68;
-    } else if (combustivel == 'Flex'){
+    } else if (combustivel == 'Flex') {
       return 1.84;
-    }else{
+    } else {
       return 0.0;
     }
   }
 
   // Calcula a emissão de CO2 com base no tipo de combustível e no número de litros consumidos
-  Future<double> calcularEmissaoCarbono(String combustivel, double litrosConsumidos) async {
+  Future<double> calcularEmissaoCarbono(
+    String combustivel,
+    double litrosConsumidos,
+  ) async {
     double fator = await determinarFatorCarbono(combustivel);
     return litrosConsumidos * fator;
   }
 
-  double calcularEmissaoCarbonoSincrona(String combustivel, double litrosConsumidos) {
+  double calcularEmissaoCarbonoSincrona(
+    String combustivel,
+    double litrosConsumidos,
+  ) {
     double fator = determinarFatorCarbonoSincrono(combustivel);
     return litrosConsumidos * fator;
   }
 
+  double estimarConsumoMedio(double quilometragem, double consumoCombustivel) {
+    if (consumoCombustivel == 0) return 0.0; // Evita divisão por zero
+    return quilometragem / consumoCombustivel;
+  }
+
+  static double calcularConsumoPorSegundo(
+    double rpm,
+    String combustivel,
+  ) {
+    double cilindrada = 1.0;
+    int numeroCilindros = 4;
+    // Configurações de densidade e relação ar-combustível por tipo de combustível
+    final Map<String, Map<String, double>> configuracoesCombustivel = {
+      "Gasolina": {"densidade": 0.74, "relacaoArCombustivel": 14.7},
+      "Etanol": {"densidade": 0.79, "relacaoArCombustivel": 9.0},
+      "Diesel": {"densidade": 0.85, "relacaoArCombustivel": 14.5},
+      "Flex": {
+        // Valores médios entre gasolina e etanol
+        "densidade": (0.74 + 0.79) / 2,
+        "relacaoArCombustivel": (14.7 + 9.0) / 2,
+      },
+    };
+
+    if (!configuracoesCombustivel.containsKey(combustivel)) {
+      combustivel = "Gasolina"; // Valor padrão se o combustível não for reconhecido
+    }
+
+    // Recupera os parâmetros do combustível
+    final densidade = configuracoesCombustivel[combustivel]!["densidade"]!;
+    final relacaoArCombustivel =
+        configuracoesCombustivel[combustivel]!["relacaoArCombustivel"]!;
+
+    const eficienciaVolumetrica = 0.85;
+
+    // Volume consumido por ciclo (em litros)
+    final volumePorCiclo = cilindrada * eficienciaVolumetrica;
+
+    // Consumo em litros por segundo
+    return (rpm * volumePorCiclo * numeroCilindros * densidade) /
+        (relacaoArCombustivel * 2 * 60 * 60);
+  }
 }
