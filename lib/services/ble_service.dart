@@ -43,6 +43,7 @@ class BleService {
   static double _totalFuelConsumed = 0.0;
   static double _lastSpeed = 0.0;
   static DateTime? _lastSpeedUpdate;
+  static String? _lastRequestedPid;
 
   // Características Bluetooth para comunicação OBD
   static BluetoothCharacteristic? _writeCharacteristic;
@@ -186,9 +187,11 @@ class BleService {
 
   // Envia comando OBD genérico
   static Future<void> requestPid(String pid) async {
+    _lastRequestedPid = pid;
     if (_writeCharacteristic == null) return;
     final command = utf8.encode('$pid\r');
     await _writeCharacteristic!.write(command, withoutResponse: true);
+    unawaited(AppSettings.logService?.writeLog('Enviado PID: $pid'));
   }
 
   //Envio comandos específicos usando o método genérico
@@ -200,10 +203,14 @@ class BleService {
   // Processamento dos dados recebidos
   static void _onDataReceived(List<int> data) {
 
-    unawaited(AppSettings.logService?.writeLog('Linha 203: data: $data'));
-
     final response = String.fromCharCodes(data);
-    unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response'));
+
+    if (response.contains('NO DATA')) {
+      print('PID não suportado ou resposta inválida para $_lastRequestedPid');
+      return null; // Ou outra lógica de fallback
+    }else{
+      unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response'));
+    }
 
     // Pode ser que a resposta tenha múltiplas linhas, parse linha a linha
     for (var line in response.split('\r')) {
@@ -220,18 +227,30 @@ class BleService {
         if (fuelRate != null) {
           updateFuelConsumption(fuelRate);
           _fuelRateController.add(fuelRate);
+          unawaited(AppSettings.logService?.writeLog('Linha 221 Combustivel PID: $fuelRate'));
         }
       } else if (line.contains('41 10')) {
         final fuelRateFromMAF = parseFuelRateFromMAF(line);
         if (fuelRateFromMAF != null) {
           updateFuelConsumption(fuelRateFromMAF);
           _fuelRateController.add(fuelRateFromMAF);
+          unawaited(AppSettings.logService?.writeLog('Linha 228 Combustivel MAF: $fuelRateFromMAF'));
         } else {
           print("Erro ao calcular o consumo de combustível a partir do MAF");
           unawaited(AppSettings.logService?.writeLog('erro ao calcular o consumo de combustível a partir do MAF'));
         }
       }
     }
+  }
+
+  static Future<void> requestAllObdData() async {
+    await requestRpm();
+    await Future.delayed(Duration(milliseconds: 100)); // Pequeno delay para não sobrecarregar o OBD
+    await requestSpeed();
+    await Future.delayed(Duration(milliseconds: 100));
+    await requestFuelRate();
+    await Future.delayed(Duration(milliseconds: 500));
+    await requestFuelRateViaMAF();
   }
 
   // Parsers
@@ -299,9 +318,10 @@ class BleService {
     final timeElapsed = (currentTimestamp - _lastDistanceTimestamp) / 3600000.0; // em horas
 
     if (_lastSpeed > 0 && timeElapsed > 0) {
-      final distanceDelta = _lastSpeed * timeElapsed;
+      final distanceDelta = currentSpeed * timeElapsed;
       _totalDistance += distanceDelta;
       _distanceStreamController.add(_totalDistance);
+      unawaited(AppSettings.logService?.writeLog('Linha 316: Distância acumulada: $_totalDistance km'));
     }
 
     _lastDistanceTimestamp = currentTimestamp;
@@ -311,6 +331,7 @@ class BleService {
   static void updateSpeed(double speed) {
     _lastSpeed = speed;
     _speedStreamController.add(speed);
+    unawaited(AppSettings.logService?.writeLog('Linha 326: Velocidade atual: $speed km/h'));
     updateDistance(speed);
   }
 
@@ -322,6 +343,7 @@ class BleService {
       final fuelUsed = fuelRate * deltaTime;
       _totalFuelConsumed += fuelUsed;
       _fuelStreamController.add(_totalFuelConsumed);
+      unawaited(AppSettings.logService?.writeLog('Linha 338: Combustível consumido: $_totalFuelConsumed litros'));
     }
 
     _lastFuelTimestamp = now;
