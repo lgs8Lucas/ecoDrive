@@ -1,15 +1,14 @@
-  class EcoDriveModel{
-    int? id = 0;
-    DateTime dataViagem;
-    String tipoCombustivel;
-    double quilometragemRodada;
-    double consumoCombustivel;
-    double emissaoCarbono;
-    String avaliacaoViagem;
-    String nomeViagem;
-    int duracaoViagem; //Duração da viagem em segundos
-    int tempoRpmVerde; //Tempo em que o motor ficou na faixa de RPM verde
-
+class EcoDriveModel {
+  int? id = 0;
+  DateTime dataViagem;
+  String tipoCombustivel;
+  double quilometragemRodada;
+  double consumoCombustivel;
+  double emissaoCarbono;
+  String avaliacaoViagem;
+  String nomeViagem;
+  int duracaoViagem; //Duração da viagem em segundos
+  int tempoRpmVerde; //Tempo em que o motor ficou na faixa de RPM verde
 
   // Construtor com parâmetros obrigatórios
   EcoDriveModel({
@@ -19,8 +18,13 @@
     required this.consumoCombustivel,
     required this.emissaoCarbono,
     required this.avaliacaoViagem,
-    DateTime? dataViagem, required this.nomeViagem, required this.duracaoViagem, required this.tempoRpmVerde,
-  }) : dataViagem = dataViagem ?? DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual
+    DateTime? dataViagem,
+    required this.nomeViagem,
+    required this.duracaoViagem,
+    required this.tempoRpmVerde,
+  }) : dataViagem =
+           dataViagem ??
+           DateTime.now(); //'dataViagem' é opcional se não for passado, será a data atual
 
   // Isso é necessário para salvar os dados no banco de dados SQLite
   Map<String, dynamic> toMap() {
@@ -31,11 +35,12 @@
       'consumoCombustivel': consumoCombustivel,
       'emissaoCarbono': emissaoCarbono,
       'avaliacaoViagem': avaliacaoViagem,
-      'dataViagem': dataViagem.toIso8601String(), //Formato compativel como banco de dados
+      'dataViagem': dataViagem.toIso8601String(),
+      //Formato compativel como banco de dados
       'nomeViagem': nomeViagem,
       'duracaoViagem': duracaoViagem,
       'tempoRpmVerde': tempoRpmVerde,
-     };
+    };
   }
 
   // Converte Map em objeto para ler do banco
@@ -50,8 +55,7 @@
       dataViagem: DateTime.tryParse(map['dataViagem'] ?? '') ?? DateTime.now(),
       nomeViagem: map['nomeViagem'] ?? '',
       duracaoViagem: map['duracaoViagem'] ?? 0,
-      tempoRpmVerde: map['tempoRpmVerde'] ?? 0,
+      tempoRpmVerde: map['tempoRPMVerde'] ?? 0,
     );
   }
-
 }

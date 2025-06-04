@@ -311,7 +311,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
                       );
 
                       int greenTime = (_timeOnGreenRPM * _allTime) ~/ (_timeOnGreenRPM + _timeOnRedRPM);
-                      unawaited(AppSettings.logService?.writeLog('Linha 320: greenTime: $greenTime, allTime: $_allTime, timeOnGreenRPM: $_timeOnGreenRPM, timeOnRedRPM: $_timeOnRedRPM'));
                       final viagem = EcoDriveModel(
                         nomeViagem: "Viagem ${DateTime.now().toIso8601String()}",
                         duracaoViagem: _allTime,
