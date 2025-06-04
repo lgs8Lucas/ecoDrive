@@ -202,46 +202,45 @@ class BleService {
   static Future<void> requestFuelRateViaMAF() => requestPid('0110');
 
   // Processamento dos dados recebidos
+  static String _responseBuffer = '';
+
   static void _onDataReceived(List<int> data) {
+    final responsePart = String.fromCharCodes(data);
+    unawaited(AppSettings.logService?.writeLog('Resposta recebida: $responsePart'));
+    _responseBuffer += responsePart;
 
-    final response = String.fromCharCodes(data);
+    while (_responseBuffer.contains('\r')) {
+      final splitIndex = _responseBuffer.indexOf('\r');
+      final line = _responseBuffer.substring(0, splitIndex).trim();
+      _responseBuffer = _responseBuffer.substring(splitIndex + 1);
 
-    if (response.contains('NO DATA')) {
-      unawaited(AppSettings.logService?.writeLog('PID errante: $_lastRequestedPid'));
-      print('PID não suportado ou resposta inválida para $_lastRequestedPid');
-      return;
-    }else{
-      unawaited(AppSettings.logService?.writeLog('Resposta OBD: $response'));
+      if (line.isEmpty) continue;
 
-      // Pode ser que a resposta tenha múltiplas linhas, parse linha a linha
-      for (var line in response.split('\r')) {
-        if (line.contains('41 0C')) {
-          final rpm = _parseRpmResponse(line);
-          if (rpm != null) _rpmController.add(rpm);
-        } else if (line.contains('41 0D')) {
-          final speed = _parseSpeedResponse(line);
-          if (speed != null) {
-            updateSpeed(speed);
-          }
-        } else if (line.contains('41 5E') || line.contains('41 66')) {
-          print('Resposta do PID 015E/0166: $line'); // ← Log adicionado
-          unawaited(AppSettings.logService?.writeLog('Linha 228 Resposta do PID 015E/0166: $line'));
-          final fuelRate = _parseFuelRateResponse(line);
-          if (fuelRate != null) {
-            updateFuelConsumption(fuelRate);
-            _fuelRateController.add(fuelRate);
-            unawaited(AppSettings.logService?.writeLog('Linha 221 Combustivel PID: $fuelRate'));
-          }
-        } else if (line.contains('41 10')) {
-          final fuelRateFromMAF = parseFuelRateFromMAF(line);
-          if (fuelRateFromMAF != null) {
-            updateFuelConsumption(fuelRateFromMAF);
-            _fuelRateController.add(fuelRateFromMAF);
-            unawaited(AppSettings.logService?.writeLog('Linha 228 Combustivel MAF: $fuelRateFromMAF'));
-          } else {
-            print("Erro ao calcular o consumo de combustível a partir do MAF");
-            unawaited(AppSettings.logService?.writeLog('erro ao calcular o consumo de combustível a partir do MAF'));
-          }
+      if (line.contains('NO DATA')) {
+        print('PID não suportado ou resposta inválida para $_lastRequestedPid');
+        unawaited(AppSettings.logService?.writeLog('PID errante: $_lastRequestedPid'));
+        continue;
+      }
+
+      unawaited(AppSettings.logService?.writeLog('Resposta OBD: $line'));
+
+      if (line.contains('41 0C')) {
+        final rpm = _parseRpmResponse(line);
+        if (rpm != null) _rpmController.add(rpm);
+      } else if (line.contains('41 0D')) {
+        final speed = _parseSpeedResponse(line);
+        if (speed != null) updateSpeed(speed);
+      } else if (line.contains('41 5E') || line.contains('41 66')) {
+        final fuelRate = _parseFuelRateResponse(line);
+        if (fuelRate != null) {
+          updateFuelConsumption(fuelRate);
+          _fuelRateController.add(fuelRate);
+        }
+      } else if (line.contains('41 10')) {
+        final fuelRateFromMAF = parseFuelRateFromMAF(line);
+        if (fuelRateFromMAF != null) {
+          updateFuelConsumption(fuelRateFromMAF);
+          _fuelRateController.add(fuelRateFromMAF);
         }
       }
     }

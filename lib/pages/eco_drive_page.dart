@@ -126,7 +126,7 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
     });
 
     // Escuta o stream de consumo de combustível do BleService
-    _fuelSubscription = BleService.fuelRateStream.listen((totalFuel) {
+    _fuelSubscription = BleService.fuelStream.listen((totalFuel) {
       //App_log
       unawaited(AppSettings.logService?.writeLog('Linha 129: taxa de Combustível: $totalFuel'));
 
@@ -137,9 +137,10 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       });
     });
 
-    // Solicita DATA a cada 1 segundo
-    _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+    // Solicita DATA a cada X segundo
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
       await BleService.requestAllObdData();
+
       _allTime++;
     });
   }
