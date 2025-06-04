@@ -45,6 +45,10 @@ class BleService {
   static double _lastSpeed = 0.0;
   static DateTime? _lastSpeedUpdate;
   static String? _lastRequestedPid;
+  static double? _lastMAP;
+  static double? _lastIAT;
+  static int? _lastRPM;
+  static final Set<String> _supportedPids = {};
 
   // Características Bluetooth para comunicação OBD
   static BluetoothCharacteristic? _writeCharacteristic;
@@ -133,14 +137,14 @@ class BleService {
     _scanSubscription?.cancel();
     _cancelDeviceStateSubscription();
 
-    _bluetoothStateController.close();
-    _odbConnectionStateController.close();
-    _deviceStreamController.close();
-    _distanceStreamController.close();
-    _fuelStreamController.close();
-    _fuelRateController.close();
-    _speedStreamController.close();
-    _rpmController.close();
+    if (!_bluetoothStateController.isClosed) _bluetoothStateController.close();
+    if (!_odbConnectionStateController.isClosed)_odbConnectionStateController.close();
+    if (!_deviceStreamController.isClosed)_deviceStreamController.close();
+    if (!_distanceStreamController.isClosed)_distanceStreamController.close();
+    if (!_fuelStreamController.isClosed)_fuelStreamController.close();
+    if (!_fuelRateController.isClosed)_fuelRateController.close();
+    if (!_speedStreamController.isClosed)_speedStreamController.close();
+    if (!_rpmController.isClosed)_rpmController.close();
   }
 
   static Future<bool> isBluetoothOn() async {
@@ -198,14 +202,14 @@ class BleService {
   }
 
   //Envio comandos específicos usando o método genérico
-
   static Future<void> requestRpm() => requestPid('010C');
   static Future<void> requestSpeed() => requestPid('010D');
+  static Future<void> requestMAP() => requestPid('010B');
+  static Future<void> requestIAT() => requestPid('010F');
   static Future<void> requestFuelRate() => requestPid('015E');
   static Future<void> requestFuelRateViaMAF() => requestPid('0110');
 
-  static final Set<String> _supportedPids = {};
-
+  //Apoio:
   static Future<void> checkSupportedPids() async {
     if (_writeCharacteristic == null) return;
 
@@ -238,6 +242,91 @@ class BleService {
     _parseSupportedPids(response);
   }
 
+  static Future<void> requestAllObdData() async {
+    final Queue<String> pidQueue = Queue<String>();
+
+    // Adiciona os PIDs na ordem desejada
+    pidQueue.addAll([
+      '010C', // RPM
+      '010D', // Speed
+      '015E', // Fuel Rate
+      '0110', // Fuel Rate via MAF
+    ]);
+
+    while (pidQueue.isNotEmpty) {
+      final pid = pidQueue.removeFirst();
+      await requestPid(pid);
+
+      // Delay ajustado conforme a criticidade e tempo de resposta do OBD
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
+  // Processamento dos dados  DE SErecebidos
+  static String _responseBuffer = '';
+
+  static void _onDataReceived(List<int> data) {
+    final responsePart = String.fromCharCodes(data);
+    print('Resposta recebida: $responsePart');
+    unawaited(AppSettings.logService?.writeLog('Resposta recebida: $responsePart'));
+
+    _responseBuffer += responsePart;
+
+    while (_responseBuffer.contains('\r')) {
+      final splitIndex = _responseBuffer.indexOf('\r');
+      final line = _responseBuffer.substring(0, splitIndex).trim();
+      _responseBuffer = _responseBuffer.substring(splitIndex + 1);
+
+      if (line.isEmpty) continue;
+
+      if (line.contains('NO DATA')) {
+        print('PID não suportado ou resposta inválida para $_lastRequestedPid');
+        unawaited(AppSettings.logService?.writeLog('PID errante: $_lastRequestedPid'));
+        continue;
+      }
+
+      AppSettings.logService?.writeLog('Resposta OBD: $line');
+      unawaited(AppSettings.logService?.writeLog('Resposta OBD: $line'));
+
+      if (line.contains('41 0C')) {
+        final rpm = _parseRpmResponse(line);
+        if (rpm != null){
+          _rpmController.add(rpm);
+          _lastRPM = rpm;
+          estimateFuelConsumption();
+        }
+      } else if (line.contains('41 0D')) {
+        final speed = _parseSpeedResponse(line);
+        if (speed != null) updateSpeed(speed);
+      } else if (line.contains('41 5E') || line.contains('41 66')) {
+        final fuelRate = _parseFuelRateResponse(line);
+        if (fuelRate != null) {
+          updateFuelConsumption(fuelRate);
+          _fuelRateController.add(fuelRate);
+        }
+      } else if (line.contains('41 10')) {
+        final fuelRateFromMAF = parseFuelRateFromMAF(line);
+        if (fuelRateFromMAF != null) {
+          updateFuelConsumption(fuelRateFromMAF);
+          _fuelRateController.add(fuelRateFromMAF);
+        }
+      }else if (line.contains('41 0B')) {
+        final map = _parseMAPResponse(line);
+        if (map != null){
+          _lastMAP = map;
+          estimateFuelConsumption();
+        }
+      } else if (line.contains('41 0F')) {
+        final iat = _parseIATResponse(line);
+        if (iat != null){
+          _lastIAT = iat;
+          estimateFuelConsumption();
+        }
+      }
+    }
+  }
+
+  // Parsers:
   static void _parseSupportedPids(String response) {
     final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
     final bytes = clean.split(' ');
@@ -261,83 +350,6 @@ class BleService {
     unawaited(AppSettings.logService?.writeLog('PIDs suportados: $_supportedPids'));
   }
 
-
-  // Processamento dos dados recebidos
-  static String _responseBuffer = '';
-
-  static void _onDataReceived(List<int> data) {
-    final responsePart = String.fromCharCodes(data);
-    unawaited(AppSettings.logService?.writeLog('Resposta recebida: $responsePart'));
-    _responseBuffer += responsePart;
-
-    while (_responseBuffer.contains('\r')) {
-      final splitIndex = _responseBuffer.indexOf('\r');
-      final line = _responseBuffer.substring(0, splitIndex).trim();
-      _responseBuffer = _responseBuffer.substring(splitIndex + 1);
-
-      if (line.isEmpty) continue;
-
-      if (line.contains('NO DATA')) {
-        print('PID não suportado ou resposta inválida para $_lastRequestedPid');
-        unawaited(AppSettings.logService?.writeLog('PID errante: $_lastRequestedPid'));
-        continue;
-      }
-
-      unawaited(AppSettings.logService?.writeLog('Resposta OBD: $line'));
-
-      if (line.contains('41 0C')) {
-        final rpm = _parseRpmResponse(line);
-        if (rpm != null) _rpmController.add(rpm);
-      } else if (line.contains('41 0D')) {
-        final speed = _parseSpeedResponse(line);
-        if (speed != null) updateSpeed(speed);
-      } else if (line.contains('41 5E') || line.contains('41 66')) {
-        final fuelRate = _parseFuelRateResponse(line);
-        if (fuelRate != null) {
-          updateFuelConsumption(fuelRate);
-          _fuelRateController.add(fuelRate);
-        }
-      } else if (line.contains('41 10')) {
-        final fuelRateFromMAF = parseFuelRateFromMAF(line);
-        if (fuelRateFromMAF != null) {
-          updateFuelConsumption(fuelRateFromMAF);
-          _fuelRateController.add(fuelRateFromMAF);
-        }
-      }
-    }
-  }
-
-  static Future<void> requestAllObdData() async {
-    final Queue<String> pidQueue = Queue<String>();
-
-    // Adiciona os PIDs na ordem desejada
-    pidQueue.addAll([
-      '010C', // RPM
-      '010D', // Speed
-      '015E', // Fuel Rate
-      '0110', // Fuel Rate via MAF
-    ]);
-
-    while (pidQueue.isNotEmpty) {
-      final pid = pidQueue.removeFirst();
-      await requestPid(pid);
-
-      // Delay ajustado conforme a criticidade e tempo de resposta do OBD
-      await Future.delayed(const Duration(milliseconds: 200));
-    }
-  }
-
-  // static Future<void> requestAllObdData() async {
-  //   await requestRpm();
-  //   await Future.delayed(Duration(milliseconds: 100)); // Pequeno delay para não sobrecarregar o OBD
-  //   await requestSpeed();
-  //   await Future.delayed(Duration(milliseconds: 100));
-  //   await requestFuelRate();
-  //   await Future.delayed(Duration(milliseconds: 500));
-  //   await requestFuelRateViaMAF();
-  // }
-
-  // Parsers
   static int? _parseRpmResponse(String response) {
     try {
       final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
@@ -360,6 +372,28 @@ class BleService {
         print('Velocidade parseada: $speed km/h'); // ← Log adicionado
         unawaited(AppSettings.logService?.writeLog('Linha 299: Velocidade parseada: $speed km/h'));
         return speed.toDouble();
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static double? _parseMAPResponse(String response) {
+    try {
+      final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+      final bytes = clean.split(' ');
+      if (bytes.length >= 3 && bytes[0] == '41' && bytes[1] == '0B') {
+        return int.parse(bytes[2], radix: 16).toDouble(); // MAP em kPa
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static double? _parseIATResponse(String response) {
+    try {
+      final clean = response.replaceAll(RegExp(r'[^0-9A-Fa-f ]'), '').trim();
+      final bytes = clean.split(' ');
+      if (bytes.length >= 3 && bytes[0] == '41' && bytes[1] == '0F') {
+        return int.parse(bytes[2], radix: 16).toDouble() - 40; // IAT em °C
       }
     } catch (_) {}
     return null;
@@ -398,7 +432,7 @@ class BleService {
     return null;
   }
 
-  // Atualização dos dados de distância, combustível e velocidade
+  // Atualizações: DistÂncia, velocidade e combustível
   static void updateDistance(double currentSpeed) {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final timeElapsed = (currentTimestamp - _lastDistanceTimestamp) / 3600000.0; // em horas
@@ -433,6 +467,28 @@ class BleService {
     }
 
     _lastFuelTimestamp = now;
+  }
+
+  static void estimateFuelConsumption() {
+    if (_lastMAP != null && _lastIAT != null && _lastRPM != null) {
+      const ve = 0.85; // Eficiência volumétrica estimada
+      const engineDisplacement = 1.6; // em Litros
+      const R = 8.314; // Constante dos gases
+      const afr = 14.7;
+      const fuelDensity = 745.0;
+
+      final map = _lastMAP!; // kPa
+      final iat = _lastIAT!; // °C
+      final rpm = _lastRPM!; // RPM
+
+      final maf = (rpm * map * engineDisplacement * ve) / (R * (iat + 273.15));
+
+      // Conversão para taxa de combustível
+      final fuelRateLph = (maf * 3600) / (afr * fuelDensity);
+
+      updateFuelConsumption(fuelRateLph);
+      _fuelRateController.add(fuelRateLph);
+    }
   }
 
   static void reset() {
