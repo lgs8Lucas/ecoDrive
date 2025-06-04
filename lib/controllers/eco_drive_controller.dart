@@ -44,9 +44,28 @@ class EcoDriveController {
     }
   }
 
+  double determinarFatorCarbonoSincrono(String combustivel) {
+    if (combustivel == 'Gasolina') {
+      return 2.31;
+    } else if (combustivel == 'Etanol') {
+      return 1.37;
+    } else if (combustivel == 'Diesel') {
+      return 2.68;
+    } else if (combustivel == 'Flex'){
+      return 1.84;
+    }else{
+      return 0.0;
+    }
+  }
+
   // Calcula a emissão de CO2 com base no tipo de combustível e no número de litros consumidos
   Future<double> calcularEmissaoCarbono(String combustivel, double litrosConsumidos) async {
     double fator = await determinarFatorCarbono(combustivel);
+    return litrosConsumidos * fator;
+  }
+
+  double calcularEmissaoCarbonoSincrona(String combustivel, double litrosConsumidos) {
+    double fator = determinarFatorCarbonoSincrono(combustivel);
     return litrosConsumidos * fator;
   }
 

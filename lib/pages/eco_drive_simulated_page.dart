@@ -38,9 +38,12 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
 
   // Simulated Values
   int _rpm = 0;
-  late Future<double> _emissaoCarbono;
+  double _emissaoCarbono = 0.0;
   double _distanciaPercorrida = 0.0;
   double _fuelConsumed = 0.0;
+
+  int kmH = 50; // Velocidade em Km/h
+  int consumoMedio = 10; // Consumo médio em L/100Km
 
   StreamSubscription<double>? _inclinationSubscription;
 
@@ -50,7 +53,6 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
     super.initState();
     _initInclinationListener();
     _startSimulationTimer();
-    _emissaoCarbono = controller.calcularEmissaoCarbono(widget.combustivel, _fuelConsumed);
   }
 
   void _startSimulationTimer() {
@@ -61,8 +63,22 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
         _fuelConsumed += 0.1; // Incremento do consumo de combustível
         _distanciaPercorrida += 0.05; // Incremento da distância percorrida
         _allTime++; // Incrementa o tempo total
+        _emissaoCarbono = controller.calcularEmissaoCarbonoSincrona(
+          widget.combustivel,
+          _fuelConsumed,
+        );
         if (_rpm <= _greenRpm) {
           _timeOnGreenRPM++; // Incrementa o tempo no RPM verde
+        }
+        // Atualiza a dica com base no RPM
+        if (_rpm > _greenRpm) {
+          _tipTile = "Atenção!";
+          _tipMessage = "Reduza as rotações para economizar combustível!";
+          _tipType = 'bad';
+        } else {
+          _tipTile = "Ótima direção!";
+          _tipMessage = "Você está dirigindo de forma eficiente! Continue assim!";
+          _tipType = 'good';
         }
       });
     });
@@ -71,6 +87,7 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
   // Função para resetar os valores
   void _reset() {
     setState(() {
+      _emissaoCarbono = 0.0;
       _distanciaPercorrida = 0.0;
       _rpm = 0;
       _allTime = 0;
@@ -153,23 +170,7 @@ class _EcoDrivePageState extends State<EcoDriveSimulatedPage> {
                 greenEnd: _greenRpm.toDouble(),
               ),
               const SizedBox(height: 2),
-              FutureBuilder<double>(
-                key: ValueKey(_fuelConsumed),
-                future: _emissaoCarbono,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Erro: ${snapshot.error}');
-                  } else {
-                    return EmissaoCarbonoCard(
-                      valor: snapshot.data!.toStringAsFixed(2),
-                      unidade: "kgCO2",
-                      status: "good", //
-                    );
-                  }
-                },
-              ),
+              EmissaoCarbonoCard(valor: _emissaoCarbono.toStringAsFixed(2), unidade: "KgCO2", status: "good"),
               const SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -111,7 +111,7 @@ Future<List<Widget>> listarHistorico(
                     style: AppStyles.simpleText.copyWith(fontSize: 14),
                   ),
                   Text(
-                    "${viagem.emissaoCarbono} kg CO₂",
+                    "${viagem.emissaoCarbono.toStringAsFixed(2)} kg CO₂",
                     style: AppStyles.simpleText.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
