@@ -1,16 +1,49 @@
-# ecodrive
+# 🌱 ecoDrive
 
-A new Flutter project.
+Aplicativo Flutter para promover práticas de direção ecológica, incentivando motoristas a adotarem hábitos que reduzem o consumo de combustível e as emissões de carbono.
 
-## Getting Started
+## 🚀 Funcionalidades
 
-This project is a starting point for a Flutter application.
+- Monitoramento em tempo real de dados do veículo (velocidade, RPM, posição do acelerador) via protocolo OBD-II.
+- Pontuação e classificação do desempenho do motorista com base em métricas ecológicas.
+- Armazenamento local dos dados de condução para análise posterior.
 
-A few resources to get you started if this is your first Flutter project:
+## 📱 Tecnologias Utilizadas
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- [Flutter](https://flutter.dev/) para desenvolvimento multiplataforma.
+- [Dart](https://dart.dev/) como linguagem de programação.
+- Comunicação com dispositivos OBD-II via Bluetooth.
+- Armazenamento local utilizando SQLite.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Instalação
+
+1. Clone o repositório:
+  ```bash
+  git clone https://github.com/lgs8Lucas/ecoDrive.git
+  ```
+
+2. Navegue até o diretório do projeto:
+  ```bash
+  cd ecoDrive
+  ```
+
+3. Instale as dependências:
+  ```bash
+  flutter pub get
+  ```
+
+4. Conecte um dispositivo e execute o aplicativo:
+  ```bash
+  flutter run
+  ```
+
+## 📂 Estrutura do Projeto
+lib/ – Código fonte principal do aplicativo.
+
+android/ – Configurações específicas para Android.
+
+ios/ – Configurações específicas para iOS.
+
+assets/ – Recursos como imagens e ícones.
+
+pubspec.yaml – Gerenciamento de dependências e configurações do projeto.
