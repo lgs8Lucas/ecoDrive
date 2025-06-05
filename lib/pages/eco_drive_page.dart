@@ -148,10 +148,6 @@ class _EcoDrivePageState extends State<EcoDrivePage> {
       _allTime++;
       setState(() {
         _totalFuel += _fuelConsumed / 3600; // Convertendo L/h para L/s
-            EcoDriveController.calcularConsumoPorSegundo(
-              _currentRpm.toDouble(),
-              widget.combustivel,
-            );
         _emissaoCarbono = controller.calcularEmissaoCarbonoSincrona(
           widget.combustivel,
           _totalFuel,
